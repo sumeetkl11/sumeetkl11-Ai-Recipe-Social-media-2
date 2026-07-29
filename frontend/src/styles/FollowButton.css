@@ -1,0 +1,41 @@
+/* frontend/ai-recipe-generator-ui-boilerplate-code/src/styles/FollowButton.css */
+
+.follow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgba(251, 191, 36, 0.26);
+  background: linear-gradient(135deg, #fbbf24, #fb923c);
+  color: #111827;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(251, 146, 60, 0.24);
+  transition: transform 180ms ease, filter 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.follow-btn:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.follow-btn.following {
+  background: rgba(255, 255, 255, 0.88);
+  color: #000000;
+  border-color: rgba(17, 24, 39, 0.14);
+  box-shadow: none;
+}
+
+.follow-btn.following:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(17, 24, 39, 0.22);
+}
+
+.follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

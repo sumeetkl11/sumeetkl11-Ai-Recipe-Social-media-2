@@ -1,0 +1,166 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
+// import routes
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/user.js';
+import adminRoutes from './routes/admin.js';
+import pantryRoutes from './routes/pantry.js';
+import recipeRoutes from './routes/recipe.js';
+import { initDB } from './config/db.js';
+import mealPlanRoutes from './routes/mealPlans.js';
+import shoppingListRoutes from './routes/shoppingList.js';
+import postsRoutes from './routes/social/posts.js';
+import followersRoutes from './routes/social/followers.js';
+import notificationsRoutes from './routes/social/notifications.js';
+import messagesRoutes from './routes/messaging/messages.js';
+import streaksRoutes from './routes/social/streaks.js';
+import challengesRoutes from './routes/challenges/challenges.js';
+import collectionsRoutes from './routes/collections/collections.js';
+
+// Marketplace routes
+import listingsRoutes from './routes/marketplace/listings.js';
+import purchasesRoutes from './routes/marketplace/purchases.js';
+import wishlistsRoutes from './routes/marketplace/wishlists.js';
+import reviewsRoutes from './routes/marketplace/reviews.js';
+
+// import Socket.io setup
+import { initializeSocialSocket } from './sockets/socialSocket.js';
+
+dotenv.config();
+
+const PORT = process.env.PORT || 8000;
+const app = express();
+
+const configuredOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_ORIGIN
+]
+  .flatMap((value) => (value ? value.split(',') : []))
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://192.168.x.x:5173',
+  'https://tastebuds-main.vercel.app',
+  ...configuredOrigins
+]);
+
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.has(origin)) {
+    return true;
+  }
+
+  try {
+    const { hostname } = new URL(origin);
+    return hostname.endsWith('.vercel.app');
+  } catch {
+    return false;
+  }
+}
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Create HTTP server (required for Socket.io)
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: corsOptions,
+  transports: ['websocket', 'polling']
+});
+
+// Initialize Socket.io handlers
+initializeSocialSocket(io);
+
+// Make io available globally for controllers
+global.io = io;
+
+// app.use(cors({
+//     origin: process.env.CLIENT_URL || 'http://localhost:5173',
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+app.use(cors(corsOptions));
+  
+
+// Middleware
+// app.use(cors());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Test routes
+app.get('/', (req, res) =>{
+    res.json({message: 'AI RECIPE GENERATOR API'});
+});
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/pantry', pantryRoutes);
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/meal-plans', mealPlanRoutes);
+app.use('/api/shopping-list', shoppingListRoutes);
+
+// Social API routes (Week 1)
+app.use('/api/posts', postsRoutes);
+app.use('/api/users', followersRoutes);
+app.use('/api/notifications', notificationsRoutes);
+
+// Messaging & Activity routes (Week 2)
+app.use('/api/conversations', messagesRoutes);
+app.use('/api/streaks', streaksRoutes);
+
+// Challenges & Collections routes (Week 3)
+app.use('/api/challenges', challengesRoutes);
+app.use('/api/collections', collectionsRoutes);
+
+// Marketplace & Shopping Routes
+app.use('/api/marketplace/listings', listingsRoutes);
+app.use('/api/marketplace/purchases', purchasesRoutes);
+app.use('/api/marketplace/wishlists', wishlistsRoutes);
+app.use('/api/marketplace/reviews', reviewsRoutes);
+
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal server error'
+    });
+});
+
+// Start HTTP server (includes Express and Socket.io)
+initDB().then(() => {
+    httpServer.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📡 Socket.io enabled`);
+        console.log(`🔗 WebSocket URL: ws://localhost:${PORT}`);
+    });
+});

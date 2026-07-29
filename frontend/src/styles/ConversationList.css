@@ -1,0 +1,102 @@
+/* frontend/ai-recipe-generator-ui-boilerplate-code/src/styles/ConversationList.css */
+
+.conversation-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.9rem;
+  background: transparent;
+}
+
+.conversation-list .empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  text-align: center;
+}
+
+.conversation-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), background 0.24s ease, box-shadow 0.24s ease;
+}
+
+.conversation-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.conversation-item.selected {
+  background: linear-gradient(135deg, rgba(255, 60, 172, 0.1), rgba(43, 134, 197, 0.12));
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.conversation-item.unread {
+  box-shadow: 0 18px 36px rgba(120, 75, 160, 0.08);
+}
+
+.conversation-item .user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.conversation-item .user-avatar-text {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.conversation-info .last-message {
+  margin: 0;
+  font-size: 12px;
+  color: #667085;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unread-badge {
+  background: linear-gradient(135deg, #ff3cac, #784ba0);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}

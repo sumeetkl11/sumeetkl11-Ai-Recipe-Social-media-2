@@ -1,0 +1,201 @@
+// backend/sockets/socialSocket.js
+import jwt from 'jsonwebtoken';
+
+/**
+ * Initialize Socket.io connection
+ * Authenticates users via JWT token passed in query params
+ * @param {socket.io.Server} io - Socket.io server instance
+ */
+export function initializeSocialSocket(io) {
+  // Middleware to authenticate socket connections (optional for unauthenticated users)
+  io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.query.token;
+
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          socket.userId = decoded.id;
+          socket.email = decoded.email;
+          socket.isAuthenticated = true;
+        } catch (error) {
+          console.warn('Invalid Socket.io token:', error.message);
+          socket.isAuthenticated = false;
+        }
+      } else {
+        socket.isAuthenticated = false;
+      }
+      // Allow both authenticated and unauthenticated connections
+      next();
+    } catch (error) {
+      console.error('Socket.io auth middleware error:', error);
+      next();
+    }
+  });
+
+  // Default namespace connection - MUST exist
+  io.on('connection', (socket) => {
+    if (socket.userId) {
+      console.log(`✅ Authenticated user ${socket.userId} connected via Socket.io (${socket.id})`);
+      socket.join(`user:${socket.userId}:notifications`);
+    } else {
+      console.log(`✅ Guest connected via Socket.io (${socket.id})`);
+    }
+
+    // Send connection confirmation
+    socket.emit('connection:success', { 
+      message: 'Connected to Socket.io',
+      userId: socket.userId || null,
+      isAuthenticated: socket.isAuthenticated
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+      console.log(`❌ Socket disconnected (${socket.id})`);
+    });
+
+    // Echo/ping test
+    socket.on('ping', (data) => {
+      socket.emit('pong', { message: 'pong', data });
+    });
+
+    // --- Notification Events ---
+    socket.on('notification:send', (data) => {
+      if (data.userId) {
+        io.to(`user:${data.userId}:notifications`).emit('notification:new', data);
+      }
+    });
+
+    socket.on('notification:read', (notificationId) => {
+      if (socket.userId) {
+        io.to(`user:${socket.userId}:notifications`).emit('notification:read', {
+          notificationId
+        });
+      }
+    });
+
+    // --- Typing Indicators ---
+    socket.on('typing:start', (conversationId) => {
+      socket.to(`conversation:${conversationId}`).emit('typing:start', {
+        userId: socket.userId,
+        userName: socket.email
+      });
+    });
+
+    /**
+     * Emit when user stops typing
+     */
+    socket.on('typing:end', (conversationId) => {
+      socket.to(`conversation:${conversationId}`).emit('typing:end', {
+        userId: socket.userId
+      });
+    });
+
+    // --- Activity Updates ---
+
+    /**
+     * Emit like activity to followers
+     * Called when post is liked
+     */
+    socket.on('activity:like', (data) => {
+      // Broadcast to followers room
+      io.to(`activity:${data.postAuthorId}:followers`).emit('activity:like', data);
+    });
+
+    /**
+     * Emit new post to followers
+     */
+    socket.on('activity:post', (data) => {
+      // Broadcast to followers room
+      io.to(`activity:${socket.userId}:followers`).emit('activity:post', data);
+    });
+
+    /**
+     * User subscribes to follower activity updates
+     * Call when user navigates to feed
+     */
+    socket.on('activity:subscribe', (targetUserId) => {
+      socket.join(`activity:${targetUserId}:followers`);
+    });
+
+    /**
+     * User unsubscribes from follower activity
+     */
+    socket.on('activity:unsubscribe', (targetUserId) => {
+      socket.leave(`activity:${targetUserId}:followers`);
+    });
+
+    // --- Messaging Events (Week 2) ---
+
+    /**
+     * User joins a conversation room to receive real-time messages
+     * Called when user opens a conversation
+     */
+    socket.on('conversation:join', (conversationId) => {
+      socket.join(`conversation:${conversationId}`);
+      console.log(`User ${socket.userId} joined conversation room: ${conversationId}`);
+    });
+
+    /**
+     * User leaves a conversation room
+     * Called when user closes/navigates away from conversation
+     */
+    socket.on('conversation:leave', (conversationId) => {
+      socket.leave(`conversation:${conversationId}`);
+      console.log(`User ${socket.userId} left conversation room: ${conversationId}`);
+    });
+
+    /**
+     * User starts typing indicator in a conversation
+     * Already handled in Typing Indicators section above
+     */
+    // socket.on('typing:start', (conversationId) => {...}); // Already defined
+
+    /**
+     * User stops typing indicator in a conversation
+     * Already handled in Typing Indicators section above
+     */
+    // socket.on('typing:end', (conversationId) => {...}); // Already defined
+
+    /**
+     * Streak update notification broadcasted to follower activity
+     */
+    socket.on('activity:streak', (data) => {
+      io.to(`activity:${socket.userId}:followers`).emit('activity:streak', data);
+    });
+
+    // --- Error handling ---
+
+    socket.on('error', (error) => {
+      console.error(`Socket error for user ${socket.userId}:`, error);
+    });
+  });
+
+  return io;
+}
+
+/**
+ * Emit notification to a specific user
+ * Use this in controllers to emit notifications via Socket.io
+ * @param {socket.io.Server} io - Socket.io server instance
+ * @param {string} userId - User ID to notify
+ * @param {Object} data - Notification data
+ */
+export function emitNotification(io, userId, data) {
+  io.to(`user:${userId}:notifications`).emit('notification:new', data);
+}
+
+/**
+ * Broadcast activity to user's followers
+ * Use this when user creates a post or takes action
+ * @param {socket.io.Server} io - Socket.io server instance
+ * @param {string} userId - User ID
+ * @param {string} eventType - Event type (post, like, etc)
+ * @param {Object} data - Event data
+ */
+export function broadcastActivity(io, userId, eventType, data) {
+  io.to(`activity:${userId}:followers`).emit(`activity:${eventType}`, {
+    userId,
+    ...data
+  });
+}
