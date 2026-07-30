@@ -39,15 +39,6 @@ export const register = async (req, res, next) => {
         // create user
         const user = await User.create({ email, name, password });
 
-        // create default preferences (pass the new user's id)
-        // await UserPreference.create(user.id, {
-        //     dietary_restrictions: [],
-        //     allergies: [],
-        //     preferred_cuisines: [],
-        //     default_servings: 4,
-        //     measurement_unit: "metric",
-        // });
-
         await UserPreference.create(user.id, {
             dietary_restrictions: [],
             allergens: [],

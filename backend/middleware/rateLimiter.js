@@ -6,84 +6,58 @@ import { redisClient } from '../cache/redis.js';
  * Rate limiting configuration for different endpoint types
  */
 
+const redisStore = (prefix) =>
+    redisClient
+        ? new RedisStore({ client: redisClient, prefix })
+        : undefined;
+
 // General API rate limit - 100 requests per 15 minutes
 export const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
-    message: {
-        success: false,
-        message: 'Too many requests from this IP, please try again after 15 minutes'
-    },
+    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
-    // Use Redis store if available, fallback to memory
-    store: redisClient ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:general:'
-    }) : undefined
+    store: redisStore('rl:general:')
 });
 
 // Strict rate limit for auth endpoints - 5 requests per 15 minutes
 export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 5,
-    skipSuccessfulRequests: true, // Don't count successful requests
-    message: {
-        success: false,
-        message: 'Too many authentication attempts, please try again after 15 minutes'
-    },
+    skipSuccessfulRequests: true,
+    message: { success: false, message: 'Too many authentication attempts, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: redisClient ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:auth:'
-    }) : undefined
+    store: redisStore('rl:auth:')
 });
 
 // Write operations rate limit - 20 requests per minute
 export const writeLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000,
     max: 20,
-    message: {
-        success: false,
-        message: 'Too many write requests, please slow down'
-    },
+    message: { success: false, message: 'Too many write requests, please slow down' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: redisClient ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:write:'
-    }) : undefined
+    store: redisStore('rl:write:')
 });
 
 // Messaging rate limit - 30 messages per minute
 export const messageLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000,
     max: 30,
-    message: {
-        success: false,
-        message: 'You are sending messages too quickly, please slow down'
-    },
+    message: { success: false, message: 'You are sending messages too quickly, please slow down' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: redisClient ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:message:'
-    }) : undefined
+    store: redisStore('rl:message:')
 });
 
 // File upload rate limit - 10 uploads per hour
 export const uploadLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
+    windowMs: 60 * 60 * 1000,
     max: 10,
-    message: {
-        success: false,
-        message: 'Upload limit reached, please try again later'
-    },
+    message: { success: false, message: 'Upload limit reached, please try again later' },
     standardHeaders: true,
     legacyHeaders: false,
-    store: redisClient ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:upload:'
-    }) : undefined
+    store: redisStore('rl:upload:')
 });

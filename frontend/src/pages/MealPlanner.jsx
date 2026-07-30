@@ -2,15 +2,32 @@ import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, X, ChefHat } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
-import { format, startOfWeek, addDays } from 'date-fns';
 import api from '../services/api';
 import { getSocket } from '../services/socket';
+
+// Native date helpers (replaces date-fns)
+const startOfWeek = (d) => { const s = new Date(d); s.setDate(s.getDate() - s.getDay()); s.setHours(0,0,0,0); return s; };
+const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
+const formatDate = (d, fmt) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    return fmt
+        .replace('MMMM', months[d.getMonth()])
+        .replace('MMM', monthsShort[d.getMonth()])
+        .replace('MM', pad(d.getMonth() + 1))
+        .replace('EEEE', days[d.getDay()])
+        .replace('yyyy', d.getFullYear())
+        .replace('dd', pad(d.getDate()))
+        .replace('d', d.getDate());
+};
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const MealPlanner = () => {
-    const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
+    const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
     const [mealPlan, setMealPlan] = useState({});
     const [recipes, setRecipes] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -59,7 +76,7 @@ const MealPlanner = () => {
 
     const fetchMealPlan = async () => {
         try {
-            const startDate = format(weekStart, 'yyyy-MM-dd');
+            const startDate = formatDate(weekStart, 'yyyy-MM-dd');
             const response = await api.get('/meal-plans/weekly', { params: { start_date: startDate } });
             const meals = response.data.data.mealPlans;
 
@@ -123,7 +140,7 @@ const MealPlanner = () => {
     };
 
     const getDayMeals = (dayIndex) => {
-        const date = format(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
+        const date = formatDate(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
         return mealPlan[date] || {};
     };
 
@@ -167,7 +184,7 @@ const MealPlanner = () => {
                     <div className="text-center">
                         <p className="text-sm text-gray-600">Week of</p>
                         <p className="text-lg font-semibold text-gray-900">
-                            {format(weekStart, 'MMMM d')} - {format(addDays(weekStart, 6), 'MMMM d, yyyy')}
+                            {formatDate(weekStart, 'MMMM d')} - {formatDate(addDays(weekStart, 6), 'MMMM d, yyyy')}
                         </p>
                     </div>
                 </div>
@@ -183,7 +200,7 @@ const MealPlanner = () => {
                             <div key={day} className="p-4 text-center border-r border-gray-200 last:border-r-0">
                                 <div className="font-semibold text-gray-900">{day}</div>
                                 <div className="text-sm text-gray-500">
-                                    {format(addDays(weekStart, index), 'MMM d')}
+                                    {formatDate(addDays(weekStart, index), 'MMM d')}
                                 </div>
                             </div>
                         ))}
@@ -196,7 +213,7 @@ const MealPlanner = () => {
                                 {mealType}
                             </div>
                             {DAYS_OF_WEEK.map((_, dayIndex) => {
-                                const date = format(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
+                                const date = formatDate(addDays(weekStart, dayIndex), 'yyyy-MM-dd');
                                 const dayMeals = getDayMeals(dayIndex);
                                 const meal = dayMeals[mealType];
 
@@ -249,7 +266,7 @@ const MealPlanner = () => {
                     <div className="bg-white rounded-lg border border-gray-200 p-4">
                         <p className="text-sm text-gray-600">This Week</p>
                         <p className="text-2xl font-bold text-gray-900">
-                            {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d')}
+                            {formatDate(weekStart, 'MMM d')} - {formatDate(addDays(weekStart, 6), 'MMM d')}
                         </p>
                     </div>
                 </div>
@@ -323,7 +340,7 @@ const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">Add Meal</h2>
                         <p className="text-sm text-gray-600 capitalize">
-                            {format(new Date(date), 'EEEE, MMM d')} - {mealType}
+                            {formatDate(new Date(date + 'T00:00:00'), 'EEEE, MMM d')} - {mealType}
                         </p>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600">

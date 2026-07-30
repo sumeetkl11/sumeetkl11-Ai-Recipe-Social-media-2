@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, X, Calendar, AlertCircle, Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
 import api from '../services/api';
 import useRevalidateOnFocus from '../hooks/useRevalidateOnFocus';
 

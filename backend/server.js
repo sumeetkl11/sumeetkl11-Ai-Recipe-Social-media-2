@@ -9,6 +9,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { generalLimiter } from './middleware/rateLimiter.js';
 import { socketInjector } from './middleware/socketInjector.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // import routes
 import authRoutes from './routes/auth.js';
@@ -36,7 +37,6 @@ import reviewsRoutes from './routes/marketplace/reviews.js';
 // import Socket.io setup
 import { initializeSocialSocket } from './sockets/socialSocket.js';
 
-dotenv.config();
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -162,15 +162,11 @@ app.use('/api/marketplace/purchases', purchasesRoutes);
 app.use('/api/marketplace/wishlists', wishlistsRoutes);
 app.use('/api/marketplace/reviews', reviewsRoutes);
 
+// 404 handler for undefined routes (must be after all routes)
+app.use(notFoundHandler);
 
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal server error'
-    });
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start HTTP server (includes Express and Socket.io)
 initDB().then(() => {

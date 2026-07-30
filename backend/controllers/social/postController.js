@@ -4,36 +4,39 @@ import Comment from '../../models/social/Comment.js';
 import Notification from '../../models/social/Notification.js';
 import { pool } from '../../config/db.js';
 import { emitNotification } from '../../sockets/socialSocket.js';
+import cache from '../../services/cacheService.js';
+import ApiError from '../../utils/ApiError.js';
+import { parsePagination } from '../../utils/pagination.js';
+import { paginatedResponse, createdResponse, successResponse } from '../../utils/responseHelpers.js';
 
 /**
  * Get feed posts (paginated)
  * @route GET /api/posts
  */
-export const getFeedPosts = async (req, res) => {
+export const getFeedPosts = async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const page = parseInt(req.query.page) || 1;
-    const offset = (page - 1) * limit;
+    const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 10, maxLimit: 50 });
     const userId = req.user?.id;
 
-    const posts = await Post.getFeed(userId, limit, offset);
+    // Cache-aside pattern for feed
+    const cacheKey = cache.CACHE_KEYS.FEED(userId || 'public', page, limit);
+    
+    const result = await cache.getOrSet(
+      cacheKey,
+      async () => {
+        const posts = await Post.getFeed(userId, limit, offset);
+        const totalResult = await pool.query(`SELECT COUNT(*) as count FROM posts`);
+        const total = parseInt(totalResult.rows[0].count, 10);
+        
+        return { posts, total };
+      },
+      cache.TTL_CONFIG.FEED
+    );
 
-    const totalResult = await pool.query(`SELECT COUNT(*) as count FROM posts`);
-    const total = parseInt(totalResult.rows[0].count, 10);
-
-    res.json({
-      success: true,
-      data: posts,
-      meta: { page, limit, total }
-    });
+    res.json(paginatedResponse(result.posts, page, limit, result.total));
   } catch (error) {
     console.error('Error fetching feed posts:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch posts',
-      data: [],
-      meta: { page: 1, limit: 10, total: 0 }
-    });
+    next(ApiError.internal('Failed to fetch posts'));
   }
 };
 
@@ -41,16 +44,13 @@ export const getFeedPosts = async (req, res) => {
  * Create a new post
  * @route POST /api/posts
  */
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
   try {
     const { recipeId, caption, imageUrl } = req.body;
     const userId = req.user.id;
 
     if (!recipeId && !imageUrl && !caption?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'A recipe, image, or caption is required'
-      });
+      throw ApiError.badRequest('A recipe, image, or caption is required');
     }
 
     const createdPost = await Post.create({
@@ -62,19 +62,16 @@ export const createPost = async (req, res) => {
 
     const post = await Post.findById(createdPost.id);
 
+    // Invalidate feed caches
+    await cache.invalidateFeeds();
+    await cache.invalidateUser(userId);
+
     req.io?.emit('feed:post_created', post);
 
-    res.status(201).json({
-      success: true,
-      data: post,
-      meta: { page: 1, limit: 1, total: 1 }
-    });
+    res.status(201).json(createdResponse(post, 'Post created successfully'));
   } catch (error) {
     console.error('Error creating post:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create post'
-    });
+    next(error instanceof ApiError ? error : ApiError.internal('Failed to create post'));
   }
 };
 
@@ -82,45 +79,44 @@ export const createPost = async (req, res) => {
  * Get single post by ID
  * @route GET /api/posts/:id
  */
-export const getPost = async (req, res) => {
+export const getPost = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found'
-      });
-    }
+    // Cache individual post with counts
+    const cacheKey = cache.CACHE_KEYS.POST(id);
+    
+    const enrichedPost = await cache.getOrSet(
+      cacheKey,
+      async () => {
+        const post = await Post.findById(id);
+        if (!post) {
+          throw ApiError.notFound('Post not found');
+        }
 
-    // Get likes and comments
-    const likes = await pool.query(
-      `SELECT COUNT(*) as count FROM likes WHERE post_id = $1`,
-      [id]
+        // Get likes and comments
+        const likes = await pool.query(
+          `SELECT COUNT(*) as count FROM likes WHERE post_id = $1`,
+          [id]
+        );
+        const comments = await pool.query(
+          `SELECT COUNT(*) as count FROM comments WHERE post_id = $1`,
+          [id]
+        );
+
+        return {
+          ...post,
+          like_count: parseInt(likes.rows[0].count, 10),
+          comment_count: parseInt(comments.rows[0].count, 10)
+        };
+      },
+      cache.TTL_CONFIG.POST
     );
-    const comments = await pool.query(
-      `SELECT COUNT(*) as count FROM comments WHERE post_id = $1`,
-      [id]
-    );
 
-    const enrichedPost = {
-      ...post,
-      like_count: parseInt(likes.rows[0].count, 10),
-      comment_count: parseInt(comments.rows[0].count, 10)
-    };
-
-    res.json({
-      success: true,
-      data: enrichedPost,
-      meta: { page: 1, limit: 1, total: 1 }
-    });
+    res.json(successResponse(enrichedPost));
   } catch (error) {
     console.error('Error getting post:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch post'
-    });
+    next(error instanceof ApiError ? error : ApiError.internal('Failed to fetch post'));
   }
 };
 
@@ -128,7 +124,7 @@ export const getPost = async (req, res) => {
  * Delete a post (owner only)
  * @route DELETE /api/posts/:id
  */
-export const deletePost = async (req, res) => {
+export const deletePost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -140,34 +136,26 @@ export const deletePost = async (req, res) => {
     );
 
     if (post.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found'
-      });
+      throw ApiError.notFound('Post not found');
     }
 
     if (post.rows[0].user_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only delete your own posts'
-      });
+      throw ApiError.forbidden('You can only delete your own posts');
     }
 
     await Post.delete(id);
 
+    // Invalidate caches
+    await cache.invalidatePost(id);
+    await cache.invalidateFeeds();
+    await cache.invalidateUser(userId);
+
     req.io?.emit('feed:post_deleted', { postId: id });
 
-    res.json({
-      success: true,
-      data: { id },
-      meta: { page: 1, limit: 1, total: 1 }
-    });
+    res.json(successResponse({ id }, 'Post deleted successfully'));
   } catch (error) {
     console.error('Error deleting post:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete post'
-    });
+    next(error instanceof ApiError ? error : ApiError.internal('Failed to delete post'));
   }
 };
 
