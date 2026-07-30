@@ -1,6 +1,7 @@
 import { memo, useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bookmark, ChefHat, Clock3, Heart, MessageCircle, Send, Trash2, Utensils } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { buildApiUrl } from '../services/api';
 import { getSocket } from '../services/socket';
@@ -116,12 +117,19 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
   }, [post.id, showComments, user?.id]);
 
   const handleLike = async () => {
-    if (loading) {
-      return;
-    }
+    if (loading) return;
 
-    const method = liked ? 'DELETE' : 'POST';
+    // Optimistic: flip state immediately, rollback on error
+    const wasLiked = liked;
+    const prevCount = likeCount;
+    const nextLiked = !liked;
+    const nextCount = nextLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
 
+    setLiked(nextLiked);
+    setLikeCount(nextCount);
+    onUpdated({ id: post.id, is_liked: nextLiked, like_count: nextCount });
+
+    const method = wasLiked ? 'DELETE' : 'POST';
     try {
       setLoading(true);
       const response = await fetch(buildApiUrl(`/posts/${post.id}/like`), {
@@ -129,60 +137,51 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update like');
-      }
+      if (!response.ok) throw new Error('Failed to update like');
 
       const result = await response.json();
-      const nextLiked = Boolean(result.data?.is_liked);
-      const nextLikeCount = result.data?.like_count ?? likeCount;
-
-      setLiked(nextLiked);
-      setLikeCount(nextLikeCount);
-      onUpdated({
-        id: post.id,
-        is_liked: nextLiked,
-        like_count: nextLikeCount
-      });
-    } catch (err) {
-      console.error('Error toggling like:', err);
+      const confirmedLiked = Boolean(result.data?.is_liked);
+      const confirmedCount = result.data?.like_count ?? nextCount;
+      setLiked(confirmedLiked);
+      setLikeCount(confirmedCount);
+      onUpdated({ id: post.id, is_liked: confirmedLiked, like_count: confirmedCount });
+    } catch {
+      // Rollback on error
+      setLiked(wasLiked);
+      setLikeCount(prevCount);
+      onUpdated({ id: post.id, is_liked: wasLiked, like_count: prevCount });
+      toast.error('Could not update like — please try again');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeletePost = async () => {
-    if (!window.confirm('Are you sure you want to delete this post?')) {
-      return;
-    }
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
       const response = await fetch(buildApiUrl(`/posts/${post.id}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (response.ok) {
         onDeleted(post.id);
+      } else {
+        toast.error('Failed to delete post');
       }
-    } catch (err) {
-      console.error('Error deleting post:', err);
+    } catch {
+      toast.error('Failed to delete post — check your connection');
     }
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) {
-      return;
-    }
+    if (!newComment.trim()) return;
 
     try {
       setLoading(true);
       const response = await fetch(buildApiUrl(`/posts/${post.id}/comments`), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ content: newComment })
       });
 
@@ -191,26 +190,19 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
       if (response.ok) {
         const comment = result.data?.comment;
         const nextCommentCount = result.data?.comment_count ?? commentCount;
-
         setComments((current) => {
-          if (!comment || current.some((item) => item.id === comment.id)) {
-            return current;
-          }
+          if (!comment || current.some((item) => item.id === comment.id)) return current;
           return [...current, comment];
         });
         setCommentCount(nextCommentCount);
         setNewComment('');
         setShowComments(true);
-        onUpdated({
-          id: post.id,
-          comment_count: nextCommentCount
-        });
+        onUpdated({ id: post.id, comment_count: nextCommentCount });
       } else {
-        window.alert(result?.message || 'Failed to add comment');
+        toast.error(result?.message || 'Failed to add comment');
       }
-    } catch (err) {
-      console.error('Error adding comment:', err);
-      window.alert('Error adding comment');
+    } catch {
+      toast.error('Could not post comment — check your connection');
     } finally {
       setLoading(false);
     }

@@ -471,6 +471,42 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* ---- Keyboard / focus-visible accessibility ---- */
+
+  /* Global focus-visible ring — replaces the naked outline:none on inputs */
+  :focus-visible {
+    outline: 2px solid rgba(120, 75, 160, 0.7);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Allow components with their own focus style to opt-out */
+  .focus-ring-none:focus-visible {
+    outline: none;
+  }
+
+  /* Skip-to-content link — visually hidden until focused */
+  .skip-link {
+    position: absolute;
+    top: -999px;
+    left: 0.75rem;
+    z-index: 9999;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    background: linear-gradient(45deg, #FF3CAC 0%, #784BA0 50%, #2B86C5 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    box-shadow: 0 16px 30px rgba(120, 75, 160, 0.3);
+    transition: top 180ms ease;
+  }
+
+  .skip-link:focus-visible {
+    top: 0.75rem;
+    outline: none;
+  }
 }
 
 .spark-wrap {

@@ -190,8 +190,14 @@ export default function SocialFeed() {
 
   if (error && page === 1) {
     return (
-      <div className="glass-card p-10 text-center">
-        <p className="text-rose-300">{error}</p>
+      <div className="glass-card p-12 text-center">
+        <p className="mb-4 text-sm font-semibold text-rose-500">{error}</p>
+        <button
+          className="cta-button"
+          onClick={() => fetchFeed(1, true)}
+        >
+          Retry
+        </button>
       </div>
     );
   }

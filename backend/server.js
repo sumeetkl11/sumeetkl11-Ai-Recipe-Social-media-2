@@ -33,6 +33,7 @@ import listingsRoutes from './routes/marketplace/listings.js';
 import purchasesRoutes from './routes/marketplace/purchases.js';
 import wishlistsRoutes from './routes/marketplace/wishlists.js';
 import reviewsRoutes from './routes/marketplace/reviews.js';
+import clientErrorsRoute from './routes/clientErrors.js';
 
 // import Socket.io setup
 import { initializeSocialSocket } from './sockets/socialSocket.js';
@@ -161,6 +162,9 @@ app.use('/api/marketplace/listings', listingsRoutes);
 app.use('/api/marketplace/purchases', purchasesRoutes);
 app.use('/api/marketplace/wishlists', wishlistsRoutes);
 app.use('/api/marketplace/reviews', reviewsRoutes);
+
+// Client-side error reporting (no auth required — unauthenticated errors must reach this)
+app.use('/api/client-error', clientErrorsRoute);
 
 // 404 handler for undefined routes (must be after all routes)
 app.use(notFoundHandler);

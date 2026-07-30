@@ -1,5 +1,5 @@
-// frontend/ai-recipe-generator-ui-boilerplate-code/src/components/FollowButton.jsx
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { buildApiUrl } from '../services/api';
 import '../styles/FollowButton.css';
 
@@ -16,40 +16,42 @@ export default function FollowButton({ userId, isFollowing: initialFollowing = f
   const handleToggleFollow = useCallback(async () => {
     if (loading) return;
 
+    // Optimistic toggle
+    const next = !isFollowing;
+    setIsFollowing(next);
+    if (onFollowChange) onFollowChange(next);
+
     try {
       setLoading(true);
       const method = isFollowing ? 'DELETE' : 'POST';
-      const response = await fetch(
-        buildApiUrl(`/users/${userId}/follow`),
-        {
-          method,
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const response = await fetch(buildApiUrl(`/users/${userId}/follow`), {
+        method,
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       const result = await response.json().catch(() => null);
 
       if (response.ok || (response.status === 400 && result?.message?.includes('already following'))) {
-        const nextFollowing = !isFollowing || response.status === 400;
-        setIsFollowing(nextFollowing);
-        if (onFollowChange) {
-          onFollowChange(nextFollowing);
-        }
+        const confirmed = !isFollowing || response.status === 400;
+        setIsFollowing(confirmed);
+        if (onFollowChange) onFollowChange(confirmed);
         return;
       }
 
       if (response.status === 404 && isFollowing) {
         setIsFollowing(false);
-        if (onFollowChange) {
-          onFollowChange(false);
-        }
+        if (onFollowChange) onFollowChange(false);
         return;
       }
 
-      window.alert(result?.message || 'Failed to update follow status');
-    } catch (err) {
-      console.error('Error toggling follow:', err);
-      window.alert('Error updating follow status');
+      // Rollback + notify
+      setIsFollowing(isFollowing);
+      if (onFollowChange) onFollowChange(isFollowing);
+      toast.error(result?.message || 'Could not update follow status');
+    } catch {
+      setIsFollowing(isFollowing);
+      if (onFollowChange) onFollowChange(isFollowing);
+      toast.error('Could not update follow status — check your connection');
     } finally {
       setLoading(false);
     }
@@ -60,6 +62,8 @@ export default function FollowButton({ userId, isFollowing: initialFollowing = f
       className={`follow-btn ${isFollowing ? 'following' : ''} ${className}`}
       onClick={handleToggleFollow}
       disabled={loading}
+      aria-pressed={isFollowing}
+      aria-label={isFollowing ? `Unfollow this user` : `Follow this user`}
     >
       {loading ? '...' : isFollowing ? 'Following' : 'Follow'}
     </button>

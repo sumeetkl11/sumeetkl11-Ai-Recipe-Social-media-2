@@ -41,7 +41,7 @@ function OwnProfileRoute() {
 function App() {
   return (
     <ErrorBoundary>
-      <main className="app-shell max-w-8xl mx-auto">
+      <main id="main-content" className="app-shell max-w-8xl mx-auto">
         <AuthProvider>
           <Router>
 
@@ -111,8 +111,9 @@ function App() {
             }
           }}
         />
-      </AuthProvider>
-    </main>
+        </AuthProvider>
+      </main>
+    </ErrorBoundary>
   );
 }
 

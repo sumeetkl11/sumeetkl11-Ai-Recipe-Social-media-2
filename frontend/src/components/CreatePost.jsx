@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 import { buildApiUrl } from '../services/api';
 import { ImagePlus, NotebookPen, Share2, Sparkles, UploadCloud, X } from 'lucide-react';
 import '../styles/CreatePost.css';
@@ -21,6 +22,17 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
       fetchUserRecipes();
     }
   }, [showModal]);
+
+  useEffect(() => {
+    if (!selectedRecipe) {
+      return;
+    }
+
+    const recipe = recipes.find((item) => String(item.id) === String(selectedRecipe));
+    if (recipe?.image_url && !uploadedImageUrl && !imageUrl) {
+      setImagePreview(recipe.image_url);
+    }
+  }, [selectedRecipe, recipes, uploadedImageUrl, imageUrl]);
 
   useEffect(() => {
     if (!showModal) {
@@ -66,13 +78,13 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
     }
 
     if (!file.type.startsWith('image/')) {
-      window.alert('Please choose an image file');
+      toast.error('Please choose an image file');
       return;
     }
 
     const maxSizeInBytes = 2 * 1024 * 1024;
     if (file.size > maxSizeInBytes) {
-      window.alert('Please choose an image smaller than 2MB');
+      toast.error('Please choose an image smaller than 2MB');
       return;
     }
 
@@ -95,7 +107,7 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
     event.preventDefault();
 
     if ((!allowImageOnly && !selectedRecipe) || !caption.trim()) {
-      window.alert(allowImageOnly ? 'Please add a caption' : 'Please select a recipe and add a caption');
+      toast.error(allowImageOnly ? 'Please add a caption' : 'Please select a recipe and add a caption');
       return;
     }
 
@@ -104,7 +116,7 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
       const finalImageUrl = uploadedImageUrl || imageUrl.trim() || recipe?.image_url || '';
 
       if (allowImageOnly && !selectedRecipe && !finalImageUrl) {
-        window.alert('Please upload an image or paste an image URL');
+        toast.error('Please upload an image or paste an image URL');
         return;
       }
 
@@ -131,12 +143,13 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
         setImageUrl('');
         setUploadedImageUrl('');
         setImagePreview('');
+        toast.success('Post created successfully!');
       } else {
-        window.alert('Failed to create post');
+        toast.error('Failed to create post');
       }
     } catch (err) {
       console.error('Error creating post:', err);
-      window.alert('Error creating post');
+      toast.error('Error creating post');
     } finally {
       setLoading(false);
     }

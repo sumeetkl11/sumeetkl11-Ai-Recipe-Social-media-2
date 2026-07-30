@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../services/api';
 
 export default function MessageUserButton({ userId, className = '', label = 'Message', iconOnly = false }) {
@@ -21,7 +22,7 @@ export default function MessageUserButton({ userId, className = '', label = 'Mes
         }
       });
     } catch (error) {
-      window.alert(error.response?.data?.message || 'Failed to start conversation');
+      toast.error(error.response?.data?.message || 'Failed to start conversation');
     } finally {
       setLoading(false);
     }
@@ -34,9 +35,11 @@ export default function MessageUserButton({ userId, className = '', label = 'Mes
       disabled={loading}
       className={className}
       title={label}
+      aria-label={label}
     >
       <MessageCircle className="h-4 w-4" />
       {!iconOnly && <span>{loading ? 'Opening...' : label}</span>}
     </button>
   );
 }
+

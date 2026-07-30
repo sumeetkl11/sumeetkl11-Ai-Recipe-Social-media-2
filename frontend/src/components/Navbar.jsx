@@ -50,9 +50,16 @@ export default function Navbar() {
         setIsDropdownOpen(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsDropdownOpen(false);
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -63,7 +70,12 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
+      {/* Skip to main content — visible only on keyboard focus */}
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+
+      <nav className="sticky top-0 z-50 px-3 pt-3 sm:px-4" aria-label="Main navigation">
         <div className="glass-shell px-4 py-3 sm:px-5">
           <div className="flex min-h-[72px] items-center justify-between gap-4">
             <Link to="/dashboard" className="flex min-w-0 shrink-0 items-center gap-3">
@@ -102,8 +114,12 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
+                  id="user-menu-button"
                   onClick={() => setIsDropdownOpen((current) => !current)}
                   className="flex items-center gap-2 rounded-full border border-white/90 bg-white/78 px-2.5 py-2 text-sm font-medium text-slate-900 shadow-[0_12px_24px_rgba(15,23,42,0.06)]"
+                  aria-haspopup="menu"
+                  aria-expanded={isDropdownOpen}
+                  aria-controls="user-menu"
                 >
                   <UserAvatar
                     name={user?.name || 'User'}
@@ -120,7 +136,12 @@ export default function Navbar() {
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[28px] border border-white/90 bg-white/82 py-2 shadow-[0_24px_44px_rgba(15,23,42,0.08)] backdrop-blur-[18px]">
+                  <div
+                    id="user-menu"
+                    role="menu"
+                    aria-labelledby="user-menu-button"
+                    className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[28px] border border-white/90 bg-white/82 py-2 shadow-[0_24px_44px_rgba(15,23,42,0.08)] backdrop-blur-[18px]"
+                  >
                     <div className="border-b border-white/90 px-4 py-4">
                       <div className="flex items-center gap-3">
                         <UserAvatar
@@ -137,9 +158,10 @@ export default function Navbar() {
                       </div>
                     </div>
 
-                    <div className="px-2 py-2">
+                    <div className="px-2 py-2" role="none">
                       <Link
                         to="/profile"
+                        role="menuitem"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-white/85 hover:text-slate-900"
                       >
@@ -149,6 +171,7 @@ export default function Navbar() {
 
                       <Link
                         to="/settings"
+                        role="menuitem"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-white/85 hover:text-slate-900"
                       >
@@ -159,6 +182,7 @@ export default function Navbar() {
 
                     <button
                       type="button"
+                      role="menuitem"
                       onClick={handleLogout}
                       className="mx-2 flex w-[calc(100%-1rem)] items-center justify-center gap-3 rounded-full bg-[linear-gradient(45deg,#FF3CAC_0%,#784BA0_50%,#2B86C5_100%)] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(120,75,160,0.2)]"
                     >

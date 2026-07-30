@@ -1,18 +1,17 @@
 // backend/middleware/errorHandler.js
 import ApiError from '../utils/ApiError.js';
+import logger from '../utils/logger.js';
 
 /**
  * Global error handler middleware
  * Catches all errors and formats them consistently
  */
 export const errorHandler = (err, req, res, next) => {
-    // Log error for debugging
-    console.error('Error caught by global handler:', {
-        message: err.message,
+    logger.error(err.message ?? 'Unhandled error', {
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
         path: req.path,
         method: req.method,
-        userId: req.user?.id
+        userId: req.user?.id,
     });
 
     // Handle ApiError instances
