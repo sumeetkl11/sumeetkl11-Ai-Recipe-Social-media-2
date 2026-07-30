@@ -228,7 +228,7 @@ export const getTrendingCollections = async (req, res) => {
     } else {
       collections = await Collection.getTrending(limit);
       // Cache for 1 hour
-      await redisClient.setex(cacheKey, 3600, JSON.stringify(collections));
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(collections));
     }
 
     res.json({

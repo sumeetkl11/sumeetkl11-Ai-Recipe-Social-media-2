@@ -48,7 +48,7 @@ export const getUnreadCount = async (req, res) => {
       } else {
         unreadCount = await Notification.getUnreadCount(userId);
         // Cache for 10 minutes
-        await redisClient.setex(cacheKey, 600, unreadCount.toString());
+        await redisClient.setEx(cacheKey, 600, unreadCount.toString());
       }
     } catch (dbError) {
       console.warn('Database error fetching unread count, returning 0:', dbError.message);

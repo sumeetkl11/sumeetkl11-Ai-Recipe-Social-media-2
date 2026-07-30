@@ -45,7 +45,7 @@ export const getStreakLeaderboard = async (req, res) => {
     } else {
       leaderboard = await Streak.getTopStreaks(limit);
       // Cache for 1 hour
-      await redisClient.setex(cacheKey, 3600, JSON.stringify(leaderboard));
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(leaderboard));
     }
 
     res.json({

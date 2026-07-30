@@ -146,7 +146,7 @@ export const getChallengeLeaderboard = async (req, res) => {
     } else {
       leaderboard = await Challenge.getLeaderboard(challengeId, limit);
       // Cache for 1 hour
-      await redisClient.setex(cacheKey, 3600, JSON.stringify(leaderboard));
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(leaderboard));
     }
 
     res.json({
