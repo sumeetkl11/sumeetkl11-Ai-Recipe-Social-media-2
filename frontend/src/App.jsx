@@ -26,9 +26,6 @@ import MessagesPage from './pages/MessagesPage';
 import ProfilePage from './pages/ProfilePage';
 import MarketplaceHub from './pages/Marketplace/MarketplaceHub';
 import CreateListing from './pages/Marketplace/CreateListing';
-import ListingDetails from './pages/Marketplace/ListingDetails';
-import PurchaseHistory from './pages/Marketplace/PurchaseHistory';
-import WishlistPage from './pages/Marketplace/WishlistPage';
 
 function OwnProfileRoute() {
   const { user } = useAuth();
@@ -76,9 +73,6 @@ function App() {
                 <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
                 <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHub /></ProtectedRoute>} />
                 <Route path="/marketplace/new" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                <Route path="/marketplace/item/:id" element={<ProtectedRoute><ListingDetails /></ProtectedRoute>} />
-                <Route path="/marketplace/purchases" element={<ProtectedRoute><PurchaseHistory /></ProtectedRoute>} />
-                <Route path="/marketplace/wishlists" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><OwnProfileRoute /></ProtectedRoute>} />
                 <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />

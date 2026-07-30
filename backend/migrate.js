@@ -27,82 +27,9 @@ async function runMigration() {
         const schemaPath = path.join(__dirname, 'config', 'schema.sql');
         const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
-        // Better SQL splitting that handles multiline statements
-        const statements = [];
-        let currentStatement = '';
-        let inDollarQuote = false;
-        let dollarQuoteDelim = '';
-        
-        const lines = schemaSql.split('\n');
-        
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            
-            // Skip comments and empty lines
-            if (!trimmedLine || trimmedLine.startsWith('--') || trimmedLine.startsWith('/*')) {
-                if (currentStatement) currentStatement += '\n' + line;
-                continue;
-            }
-            
-            // Check for dollar quotes
-            const dollarRegex = /\$\w*\$/g;
-            let match;
-            while ((match = dollarRegex.exec(trimmedLine)) !== null) {
-                const delim = match[0];
-                if (inDollarQuote && dollarQuoteDelim === delim) {
-                    inDollarQuote = false;
-                    dollarQuoteDelim = '';
-                } else if (!inDollarQuote) {
-                    inDollarQuote = true;
-                    dollarQuoteDelim = delim;
-                }
-            }
-            
-            currentStatement += (currentStatement ? '\n' : '') + line;
-            
-            // Check for statement end (semicolon not in dollar quote)
-            if (!inDollarQuote && trimmedLine.endsWith(';')) {
-                statements.push(currentStatement.trim());
-                currentStatement = '';
-            }
-        }
-        
-        // Add any remaining statement
-        if (currentStatement.trim()) {
-            statements.push(currentStatement.trim());
-        }
-
-        let successCount = 0;
-        let warningCount = 0;
-
-        for (const statement of statements) {
-            try {
-                if (statement.trim()) {
-                    await client.query(statement);
-                    successCount++;
-                }
-            } catch (stmtError) {
-                // Ignore errors for objects that already exist or relations that don't exist yet
-                if (stmtError.code === '42P07' || // relation already exists
-                    stmtError.code === '42701' || // column already exists  
-                    stmtError.code === '42703' || // column does not exist
-                    stmtError.code === '42710' || // trigger already exists
-                    stmtError.code === '42P02' || // index does not exist
-                    stmtError.message.includes('already exists')) {
-                    warningCount++;
-                    // Silently skip
-                } else {
-                    console.error(`❌ Error in statement:`);
-                    console.error(`   ${statement.substring(0, 100).replace(/\n/g, ' ')}...`);
-                    console.error(`   ${stmtError.message}`);
-                    warningCount++;
-                }
-            }
-        }
-
+        // Execute schema SQL directly
+        await client.query(schemaSql);
         console.log(`\n✅ Database migration completed!`);
-        console.log(`   Executed: ${successCount} statements`);
-        console.log(`   Skipped/Warnings: ${warningCount} statements`);
         console.log('\nTables available:');
         console.log('  - users');
         console.log('  - user_preferences');
