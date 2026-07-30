@@ -44,11 +44,9 @@ export const AuthProvider = ({ children }) => {
 
             return { success: true };
         } catch (error) {
-            const errorMsg = error.response?.data?.message || 'Login failed';
             return { 
                 success: false, 
-                message: errorMsg,
-                error: errorMsg 
+                error: error.response?.data?.message || 'Login failed' 
             };
         }
     };
@@ -68,11 +66,9 @@ export const AuthProvider = ({ children }) => {
             return { success: true };
         
        }catch(error){
-        const errorMsg = error.response?.data?.message || 'Registration failed';
         return { 
             success: false, 
-            message: errorMsg,
-            error: errorMsg 
+            error: error.response?.data?.message || 'Registration failed' 
         };
        }
     };

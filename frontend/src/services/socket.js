@@ -57,9 +57,6 @@ export function initializeSocket(token) {
     console.error('Socket.io error:', error);
   });
 
-  // Make socket available globally for debugging
-  window.socket = socketInstance;
-
   return socketInstance;
 }
 
@@ -85,8 +82,8 @@ export function disconnectSocket() {
  * @param {string} conversationId - Conversation ID
  */
 export function joinConversation(conversationId) {
-  if (window.socket?.connected) {
-    window.socket.emit('conversation:join', conversationId);
+  if (socketInstance?.connected) {
+    socketInstance.emit('conversation:join', conversationId);
   }
 }
 
@@ -95,8 +92,8 @@ export function joinConversation(conversationId) {
  * @param {string} conversationId - Conversation ID
  */
 export function leaveConversation(conversationId) {
-  if (window.socket?.connected) {
-    window.socket.emit('conversation:leave', conversationId);
+  if (socketInstance?.connected) {
+    socketInstance.emit('conversation:leave', conversationId);
   }
 }
 
@@ -105,8 +102,8 @@ export function leaveConversation(conversationId) {
  * @param {string} conversationId - Conversation ID
  */
 export function emitTypingStart(conversationId) {
-  if (window.socket?.connected) {
-    window.socket.emit('typing:start', conversationId);
+  if (socketInstance?.connected) {
+    socketInstance.emit('typing:start', conversationId);
   }
 }
 
@@ -115,8 +112,8 @@ export function emitTypingStart(conversationId) {
  * @param {string} conversationId - Conversation ID
  */
 export function emitTypingEnd(conversationId) {
-  if (window.socket?.connected) {
-    window.socket.emit('typing:end', conversationId);
+  if (socketInstance?.connected) {
+    socketInstance.emit('typing:end', conversationId);
   }
 }
 
@@ -125,8 +122,8 @@ export function emitTypingEnd(conversationId) {
  * @param {function} callback - Function to call when message received
  */
 export function onNewMessage(callback) {
-  if (window.socket) {
-    window.socket.on('message:new', callback);
+  if (socketInstance) {
+    socketInstance.on('message:new', callback);
   }
 }
 
@@ -135,14 +132,14 @@ export function onNewMessage(callback) {
  * @param {function} callback - Function to call when typing event occurs
  */
 export function onTypingStart(callback) {
-  if (window.socket) {
-    window.socket.on('typing:start', callback);
+  if (socketInstance) {
+    socketInstance.on('typing:start', callback);
   }
 }
 
 export function onTypingEnd(callback) {
-  if (window.socket) {
-    window.socket.on('typing:end', callback);
+  if (socketInstance) {
+    socketInstance.on('typing:end', callback);
   }
 }
 
@@ -151,8 +148,8 @@ export function onTypingEnd(callback) {
  * @param {function} callback - Function to call when notification received
  */
 export function onNewNotification(callback) {
-  if (window.socket) {
-    window.socket.on('notification:new', callback);
+  if (socketInstance) {
+    socketInstance.on('notification:new', callback);
   }
 }
 
@@ -161,10 +158,20 @@ export function onNewNotification(callback) {
  * @param {function} callback - Function to call when activity occurs
  */
 export function onActivityUpdate(callback) {
-  if (window.socket) {
-    window.socket.on('activity:post', callback);
-    window.socket.on('activity:like', callback);
-    window.socket.on('activity:streak', callback);
+  if (socketInstance) {
+    socketInstance.on('activity:post', callback);
+    socketInstance.on('activity:like', callback);
+    socketInstance.on('activity:streak', callback);
+  }
+}
+
+/**
+ * Listen for real-time meal plan updates
+ * @param {function} callback - Function to call when meal plan update is received
+ */
+export function onMealPlanUpdate(callback) {
+  if (socketInstance) {
+    socketInstance.on('mealplan:update', callback);
   }
 }
 
@@ -174,7 +181,7 @@ export function onActivityUpdate(callback) {
  * @param {function} callback - Callback function to remove
  */
 export function offEvent(event, callback) {
-  if (window.socket) {
-    window.socket.off(event, callback);
+  if (socketInstance) {
+    socketInstance.off(event, callback);
   }
 }

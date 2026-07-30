@@ -49,7 +49,8 @@ class Recipe {
                 
                 const ingredientParams = [recipe.id];
                 ingredients.forEach(ing => {
-                    ingredientParams.push(ing.name, ing.quantity, ing.unit);
+                    const parsedQty = Math.round(parseFloat(ing.quantity) || 0);
+                    ingredientParams.push(ing.name, parsedQty, ing.unit || '');
                 });
 
                 await client.query(
@@ -60,10 +61,18 @@ class Recipe {
 
             // Insert nutrition
             if (nutrition && Object.keys(nutrition).length > 0) {
+                const parseNutr = (val) => Math.round(parseFloat(val) || 0);
                 await client.query(
                     `INSERT INTO recipe_nutrition (recipe_id, calories, protein, carbs, fat, fiber)
             VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [recipe.id, nutrition.calories, nutrition.protein, nutrition.carbs, nutrition.fat, nutrition.fiber]
+                    [
+                        recipe.id,
+                        parseNutr(nutrition.calories),
+                        parseNutr(nutrition.protein),
+                        parseNutr(nutrition.carbs),
+                        parseNutr(nutrition.fat),
+                        parseNutr(nutrition.fiber)
+                    ]
                 );
             }
 

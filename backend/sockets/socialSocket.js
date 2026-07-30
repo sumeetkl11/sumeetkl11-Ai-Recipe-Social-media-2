@@ -38,6 +38,7 @@ export function initializeSocialSocket(io) {
     if (socket.userId) {
       console.log(`✅ Authenticated user ${socket.userId} connected via Socket.io (${socket.id})`);
       socket.join(`user:${socket.userId}:notifications`);
+      socket.join(`user:${socket.userId}:mealplan`);
     } else {
       console.log(`✅ Guest connected via Socket.io (${socket.id})`);
     }

@@ -29,7 +29,8 @@ const getGeminiModel = () => {
         throw new Error('GEMINI_API_KEY is not configured');
     }
 
-    return ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    return ai.getGenerativeModel({ model: modelName });
 };
 
 const extractJsonPayload = (text) => {
@@ -133,8 +134,6 @@ export const generateRecipe = async ({
     try {
         const recipe = await generateJson(prompt);
         const normalizedRecipe = normalizeRecipe(recipe, cuisine, servings);
-        
-        console.log('Generated recipe nutrition:', normalizedRecipe.nutrition);
         
         return normalizedRecipe;   
     } catch (error) {

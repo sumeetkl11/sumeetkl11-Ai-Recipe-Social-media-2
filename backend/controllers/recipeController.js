@@ -10,8 +10,6 @@ export const generateRecipe = async (req, res, next) => {
     try {
         const { ingredients, diet, cuisine, occasion } = req.body;
         
-        console.log('Generate recipe request:', { ingredients, diet, cuisine, occasion });
-        
         if (!ingredients || !ingredients.length) {
             return res.status(400).json({ 
                 success: false, 
@@ -19,7 +17,6 @@ export const generateRecipe = async (req, res, next) => {
             });
         }
         
-        // Run recipe text + image generation in parallel
         const recipeData = await generateRecipeFromAI({
             ingredients,
             dietaryRestrictions: diet,
@@ -121,24 +118,8 @@ export const getSmartPantrySuggestions = async (req, res, next) => {
 };
 
 // Save recipe
-// export const saveRecipe = async (req, res, next) => {
-//     try {
-//         const recipe = await Recipe.create(req.user.id, req.body);
-        
-//         res.status(201).json({
-//             success: true,
-//             message: 'Recipe saved successfully',
-//             data: { recipe }
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-// Save recipe
 export const saveRecipe = async (req, res, next) => {
     try {
-        console.log('Ingredient sample:', req.body.ingredients?.[0]); // ✅ temp debug log
 
         const recipeData = {
             ...req.body,
@@ -166,8 +147,6 @@ export const saveRecipe = async (req, res, next) => {
 // get all recipes
 export const getAllRecipes = async (req, res, next) => {
     try {
-        console.log('Getting recipes for user:', req.user.id);
-        
         const { search, 
             cuisine_type, 
             difficulty,
@@ -178,8 +157,6 @@ export const getAllRecipes = async (req, res, next) => {
             limit, 
             offset 
         } = req.query;
-
-        console.log('Recipe filters:', { search, cuisine_type, difficulty, dietary_tag });
 
         await ensureDefaultRecipesForUser(req.user.id);
 

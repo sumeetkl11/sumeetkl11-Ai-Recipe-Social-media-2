@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import { format, startOfWeek, addDays } from 'date-fns';
 import api from '../services/api';
+import { getSocket } from '../services/socket';
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -19,6 +20,41 @@ const MealPlanner = () => {
     useEffect(() => {
         fetchMealPlan();
         fetchRecipes();
+
+        const handleMealPlanUpdate = (payload) => {
+            if (payload?.action === 'delete') {
+                // Optimistically remove from local state without re-fetching
+                setMealPlan((prev) => {
+                    const updated = { ...prev };
+                    for (const date of Object.keys(updated)) {
+                        for (const type of Object.keys(updated[date])) {
+                            if (updated[date][type]?.id === payload.id) {
+                                const newDay = { ...updated[date] };
+                                delete newDay[type];
+                                updated[date] = newDay;
+                            }
+                        }
+                    }
+                    return updated;
+                });
+            } else {
+                fetchMealPlan();
+            }
+        };
+
+        const socket = getSocket();
+        if (socket) {
+            socket.on('mealplan:update', handleMealPlanUpdate);
+            // Re-register after reconnect
+            socket.on('connect', fetchMealPlan);
+        }
+
+        return () => {
+            if (socket) {
+                socket.off('mealplan:update', handleMealPlanUpdate);
+                socket.off('connect', fetchMealPlan);
+            }
+        };
     }, [weekStart]);
 
     const fetchMealPlan = async () => {
@@ -62,13 +98,27 @@ const MealPlanner = () => {
     const handleRemoveMeal = async (mealId) => {
         if (!confirm('Remove this meal from your plan?')) return;
 
+        // Optimistic UI update
+        setMealPlan((prev) => {
+            const updated = { ...prev };
+            for (const date of Object.keys(updated)) {
+                for (const type of Object.keys(updated[date])) {
+                    if (updated[date][type]?.id === mealId) {
+                        const newDay = { ...updated[date] };
+                        delete newDay[type];
+                        updated[date] = newDay;
+                    }
+                }
+            }
+            return updated;
+        });
+
         try {
             await api.delete(`/meal-plans/${mealId}`);
-            await fetchMealPlan();
             toast.success('Meal removed');
-            
         } catch (error) {
             toast.error('Failed to remove meal');
+            fetchMealPlan(); // Revert on error
         }
     };
 

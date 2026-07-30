@@ -21,7 +21,7 @@ const Login = () => {
             toast.success('Welcome back!');
             navigate('/dashboard');
         } else {
-            toast.error(result.message);
+            toast.error(result.error);
         }
 
         setLoading(false);

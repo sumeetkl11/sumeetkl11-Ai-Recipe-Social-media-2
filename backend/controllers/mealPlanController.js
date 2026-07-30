@@ -4,6 +4,11 @@ import MealPlan from '../models/MealPlan.js';
 export const addToMealPlan = async (req, res, next) => {
     try {
         const mealPlan = await MealPlan.create(req.user.id, req.body);
+
+        if (global.io && req.user?.id) {
+            global.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'add', mealPlan });
+        }
+
         res
         .status(201)
         .json({
@@ -65,6 +70,11 @@ export const deleteMealPlan = async (req, res, next) => {
                 message: 'Meal plan entry not found'
             });
         }
+
+        if (global.io && req.user?.id) {
+            global.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'delete', id });
+        }
+
         res.json({
             success: true,
             message: 'Meal plan entry deleted',
