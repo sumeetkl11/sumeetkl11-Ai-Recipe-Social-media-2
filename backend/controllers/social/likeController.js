@@ -62,7 +62,7 @@ export const likePost = async (req, res) => {
 
           const notificationPayload = await Notification.findById(notification.id);
           if (notificationPayload) {
-            emitNotification(global.io, postOwnerId, notificationPayload);
+            emitNotification(req.io, postOwnerId, notificationPayload);
           }
         } catch (notificationError) {
           console.error('Error creating like notification:', notificationError);
@@ -70,7 +70,7 @@ export const likePost = async (req, res) => {
       }
     }
 
-    global.io?.emit('feed:like_updated', {
+    req.io?.emit('feed:like_updated', {
       postId,
       likeCount: post?.like_count ?? undefined,
       actorId: userId,
@@ -130,7 +130,7 @@ export const unlikePost = async (req, res) => {
     await Post.decrementLikeCount(postId);
     const post = await Post.findById(postId);
 
-    global.io?.emit('feed:like_updated', {
+    req.io?.emit('feed:like_updated', {
       postId,
       likeCount: post?.like_count ?? undefined,
       actorId: userId,

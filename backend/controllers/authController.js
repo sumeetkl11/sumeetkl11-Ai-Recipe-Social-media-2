@@ -58,8 +58,17 @@ export const register = async (req, res, next) => {
 
         await ensureDefaultRecipesForUser(user.id);
 
-        // generate token
+        // generate token and set httpOnly cookie
         const token = generateToken(user);
+        
+        // Set httpOnly cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        });
+        
         res.status(201).json({
             success: true,
             message: "User registered successfully",
@@ -70,8 +79,7 @@ export const register = async (req, res, next) => {
                     name: user.name,
                     avatar_url: user.avatar_url,
                     isAdmin: isAdminEmail(user.email)
-                },
-                token
+                }
             }
         });
         
@@ -112,8 +120,17 @@ export const login = async (req, res, next) => {
             });
         }
 
-        // generate token
+        // generate token and set httpOnly cookie
         const token = generateToken(user);
+        
+        // Set httpOnly cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        });
+        
         res.status(200).json({
             success: true,
             message: "User logged in successfully",
@@ -124,8 +141,7 @@ export const login = async (req, res, next) => {
                     name: user.name,
                     avatar_url: user.avatar_url,
                     isAdmin: isAdminEmail(user.email)
-                },
-                token
+                }
             }
         });
         
@@ -133,6 +149,25 @@ export const login = async (req, res, next) => {
         next(error);
     }
 }
+
+// logout user
+export const logout = async (req, res, next) => {
+    try {
+        // Clear the httpOnly cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+        
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 // get current user
 export const getCurrentUser = async (req, res, next) => {

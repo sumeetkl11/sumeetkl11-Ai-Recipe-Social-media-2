@@ -13,7 +13,14 @@ const { Pool } = pkg;
 
 const connectionString = process.env.DATABASE_URL;
 
-const poolConfig = {};
+const poolConfig = {
+    // Connection pool configuration for production readiness
+    max: 20, // Maximum number of clients in pool
+    min: 2, // Minimum number of clients in pool
+    idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+    connectionTimeoutMillis: 2000, // Return error after 2 seconds if connection can't be established
+    maxUses: 7500, // Close & replace connection after 7500 uses
+};
 
 if (connectionString) {
     poolConfig.connectionString = connectionString;
@@ -29,6 +36,20 @@ if (connectionString) {
 }
 
 const pool = new Pool(poolConfig);
+
+// Log pool errors
+pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('Closing database pool...');
+    await pool.end();
+    process.exit(0);
+});
+
+export { pool };
 
 export const initDB = async () => {
     try {

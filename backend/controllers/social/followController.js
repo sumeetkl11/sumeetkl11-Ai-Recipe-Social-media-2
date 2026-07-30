@@ -70,7 +70,7 @@ export const followUser = async (req, res) => {
 
       const notificationPayload = await Notification.findById(notification.id);
       if (notificationPayload) {
-        emitNotification(global.io, followingId, notificationPayload);
+        emitNotification(req.io, followingId, notificationPayload);
       }
     } catch (notificationError) {
       console.error('Error creating follow notification:', notificationError);

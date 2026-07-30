@@ -2,32 +2,57 @@ import io from 'socket.io-client';
 import { SOCKET_URL } from './api';
 
 let socketInstance = null;
+let connectionPromise = null;
 
 /**
- * Socket.io client initialization
- * Connects to backend with JWT authentication
- * @param {string} token - JWT authentication token
- * @returns {socket.io.Socket} Socket instance
+ * Socket.io client initialization with race condition protection
+ * Connects to backend with JWT authentication (from httpOnly cookie)
+ * @returns {Promise<socket.io.Socket>} Promise that resolves to Socket instance
  */
-export function initializeSocket(token) {
-  if (socketInstance) {
-    if (socketInstance.connected) {
-      console.log('✅ Socket.io already connected:', socketInstance.id);
-      return socketInstance;
-    }
-
-    if (socketInstance.active) {
-      console.log('⏳ Socket.io connection in progress');
-      return socketInstance;
-    }
-
-    socketInstance.auth = token ? { token } : {};
-    socketInstance.connect();
-    return socketInstance;
+export function initializeSocket() {
+  // If already connected, return resolved promise
+  if (socketInstance?.connected) {
+    console.log('✅ Socket.io already connected:', socketInstance.id);
+    return Promise.resolve(socketInstance);
   }
 
+  // If connection in progress, return existing promise
+  if (connectionPromise) {
+    console.log('⏳ Socket.io connection already in progress');
+    return connectionPromise;
+  }
+
+  // If instance exists but disconnected, reconnect
+  if (socketInstance && !socketInstance.connected) {
+    console.log('🔄 Reconnecting existing socket instance');
+    socketInstance.connect();
+    
+    connectionPromise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        connectionPromise = null;
+        reject(new Error('Socket connection timeout'));
+      }, 5000);
+
+      socketInstance.once('connect', () => {
+        clearTimeout(timeout);
+        connectionPromise = null;
+        resolve(socketInstance);
+      });
+
+      socketInstance.once('connect_error', (error) => {
+        clearTimeout(timeout);
+        connectionPromise = null;
+        reject(error);
+      });
+    });
+
+    return connectionPromise;
+  }
+
+  // Create new socket instance
+  console.log('🔌 Creating new Socket.io connection');
   socketInstance = io(SOCKET_URL, {
-    auth: token ? { token } : {},
+    withCredentials: true, // Send cookies with requests
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
@@ -36,7 +61,7 @@ export function initializeSocket(token) {
     forceNew: false,
   });
 
-  // Connection events
+  // Set up event listeners
   socketInstance.on('connect', () => {
     console.log('✅ Socket.io connected:', socketInstance.id || '(pending id)');
   });
@@ -57,7 +82,29 @@ export function initializeSocket(token) {
     console.error('Socket.io error:', error);
   });
 
-  return socketInstance;
+  // Create promise that resolves when connected
+  connectionPromise = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      connectionPromise = null;
+      console.warn('⚠️ Socket connection timeout - continuing anyway');
+      resolve(socketInstance); // Resolve anyway, connection may complete later
+    }, 5000);
+
+    socketInstance.once('connect', () => {
+      clearTimeout(timeout);
+      connectionPromise = null;
+      resolve(socketInstance);
+    });
+
+    socketInstance.once('connect_error', (error) => {
+      clearTimeout(timeout);
+      connectionPromise = null;
+      console.error('❌ Socket connection failed:', error);
+      resolve(socketInstance); // Still resolve, allow retry logic
+    });
+  });
+
+  return connectionPromise;
 }
 
 /**

@@ -87,8 +87,8 @@ export const recordCookEvent = async (req, res) => {
     await redisClient.del('app:leaderboard:streaks');
 
     // Emit to followers
-    if (global.io) {
-      global.io.to(`activity:${userId}:followers`).emit('activity:cook', {
+    if (req.io) {
+      req.io.to(`activity:${userId}:followers`).emit('activity:cook', {
         userId,
         streak: streak.current_streak,
         recipeId

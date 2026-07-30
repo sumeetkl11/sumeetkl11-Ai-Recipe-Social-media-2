@@ -1,5 +1,6 @@
 // backend/sockets/socialSocket.js
 import jwt from 'jsonwebtoken';
+import { pool } from '../config/db.js';
 
 /**
  * Initialize Socket.io connection
@@ -131,10 +132,35 @@ export function initializeSocialSocket(io) {
     /**
      * User joins a conversation room to receive real-time messages
      * Called when user opens a conversation
+     * NOW WITH AUTHORIZATION CHECK
      */
-    socket.on('conversation:join', (conversationId) => {
-      socket.join(`conversation:${conversationId}`);
-      console.log(`User ${socket.userId} joined conversation room: ${conversationId}`);
+    socket.on('conversation:join', async (conversationId) => {
+      if (!socket.userId) {
+        socket.emit('error', { message: 'Authentication required' });
+        return;
+      }
+
+      try {
+        // Verify user is participant in this conversation
+        const result = await pool.query(
+          `SELECT id FROM conversations 
+           WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)`,
+          [conversationId, socket.userId]
+        );
+
+        if (result.rows.length === 0) {
+          socket.emit('error', { 
+            message: 'Unauthorized: You are not a participant in this conversation' 
+          });
+          return;
+        }
+
+        socket.join(`conversation:${conversationId}`);
+        console.log(`User ${socket.userId} joined conversation room: ${conversationId}`);
+      } catch (error) {
+        console.error('Error joining conversation:', error);
+        socket.emit('error', { message: 'Failed to join conversation' });
+      }
     });
 
     /**

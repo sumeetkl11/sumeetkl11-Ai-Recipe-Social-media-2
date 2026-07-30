@@ -209,7 +209,7 @@ export const sendMessage = async (req, res) => {
     );
 
     // Emit real-time message via Socket.io
-    if (global.io) {
+    if (req.io) {
       const otherUserId = userId === user_one_id ? user_two_id : user_one_id;
       const messageWithSender = await pool.query(
         `SELECT m.*, u.name as sender_name, u.avatar_url FROM messages m
@@ -217,7 +217,7 @@ export const sendMessage = async (req, res) => {
         [message.id]
       );
       
-      global.io.to(`conversation:${conversationId}`).emit('message:new', messageWithSender.rows[0]);
+      req.io.to(`conversation:${conversationId}`).emit('message:new', messageWithSender.rows[0]);
 
       try {
         const notification = await Notification.create({
@@ -228,7 +228,7 @@ export const sendMessage = async (req, res) => {
 
         const notificationPayload = await Notification.findById(notification.id);
         if (notificationPayload) {
-          emitNotification(global.io, otherUserId, notificationPayload);
+          emitNotification(req.io, otherUserId, notificationPayload);
         }
       } catch (notificationError) {
         console.error('Error creating message notification:', notificationError);

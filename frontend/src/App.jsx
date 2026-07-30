@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ClickSpark from './components/ClickSpark';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import RouteSceneAnimator from './components/RouteSceneAnimator';
 import { useAuth } from './context/AuthContext';
@@ -39,47 +40,50 @@ function OwnProfileRoute() {
 
 function App() {
   return (
-    <main className="app-shell max-w-8xl mx-auto">
-      <AuthProvider>
-        <Router>
+    <ErrorBoundary>
+      <main className="app-shell max-w-8xl mx-auto">
+        <AuthProvider>
+          <Router>
 
-          <div className="device-shell">
-            <ClickSpark className="app-frame">
-              <RouteSceneAnimator />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<SignUp />} />
+            <div className="device-shell">
+              <ClickSpark className="app-frame">
+                <RouteSceneAnimator />
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<SignUp />} />
 
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
-                <Route path="/generate" element={<ProtectedRoute><RecipeGenerator /></ProtectedRoute>} />
-                <Route path="/recipes" element={<ProtectedRoute><MyRecipes /></ProtectedRoute>} />
-                <Route path="/recipes/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
-                <Route path="/meal-plan" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
-                <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="/social" element={<ProtectedRoute><SocialPage /></ProtectedRoute>} />
-                <Route path="/challenges" element={<ProtectedRoute><ChallengesPage /></ProtectedRoute>} />
-                <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
-                <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailPage /></ProtectedRoute>} />
-                <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-                <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHub /></ProtectedRoute>} />
-                <Route path="/marketplace/new" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><OwnProfileRoute /></ProtectedRoute>} />
-                <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </ClickSpark>
-          </div>
-        </Router>
+                    <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
+                    <Route path="/generate" element={<ProtectedRoute><RecipeGenerator /></ProtectedRoute>} />
+                    <Route path="/recipes" element={<ProtectedRoute><MyRecipes /></ProtectedRoute>} />
+                    <Route path="/recipes/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
+                    <Route path="/meal-plan" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+                    <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="/social" element={<ProtectedRoute><SocialPage /></ProtectedRoute>} />
+                    <Route path="/challenges" element={<ProtectedRoute><ChallengesPage /></ProtectedRoute>} />
+                    <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
+                    <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailPage /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                    <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHub /></ProtectedRoute>} />
+                    <Route path="/marketplace/new" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><OwnProfileRoute /></ProtectedRoute>} />
+                    <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </ErrorBoundary>
+              </ClickSpark>
+            </div>
+          </Router>
 
         <Toaster
           position="top-right"

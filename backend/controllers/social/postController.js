@@ -62,7 +62,7 @@ export const createPost = async (req, res) => {
 
     const post = await Post.findById(createdPost.id);
 
-    global.io?.emit('feed:post_created', post);
+    req.io?.emit('feed:post_created', post);
 
     res.status(201).json({
       success: true,
@@ -155,7 +155,7 @@ export const deletePost = async (req, res) => {
 
     await Post.delete(id);
 
-    global.io?.emit('feed:post_deleted', { postId: id });
+    req.io?.emit('feed:post_deleted', { postId: id });
 
     res.json({
       success: true,
@@ -259,14 +259,14 @@ export const createComment = async (req, res) => {
 
         const notificationPayload = await Notification.findById(notification.id);
         if (notificationPayload) {
-          emitNotification(global.io, postOwnerId, notificationPayload);
+          emitNotification(req.io, postOwnerId, notificationPayload);
         }
       } catch (notificationError) {
         console.error('Error creating comment notification:', notificationError);
       }
     }
 
-    global.io?.emit('feed:comment_created', {
+    req.io?.emit('feed:comment_created', {
       postId: id,
       comment,
       commentCount: post?.comment_count ?? undefined
@@ -324,7 +324,7 @@ export const deleteComment = async (req, res) => {
     await Post.decrementCommentCount(postId);
     const post = await Post.findById(postId);
 
-    global.io?.emit('feed:comment_deleted', {
+    req.io?.emit('feed:comment_deleted', {
       postId,
       commentId: id,
       commentCount: post?.comment_count ?? undefined

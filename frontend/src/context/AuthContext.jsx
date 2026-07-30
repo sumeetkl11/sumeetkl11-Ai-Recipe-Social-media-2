@@ -19,28 +19,35 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // check if user is logged in
-        const token = localStorage.getItem('token');
-        const saveduser = localStorage.getItem('user');
-        if (token && saveduser) {
-            setUser(JSON.parse(saveduser));
-            // Initialize Socket.io if user exists
-            initializeSocket(token);
-        }
-        setLoading(false);
+        // Check if user is already authenticated via httpOnly cookie
+        const checkAuth = async () => {
+            try {
+                const response = await api.get('/auth/me');
+                if (response.data.success) {
+                    setUser(response.data.data.user);
+                    // Initialize socket connection after user is confirmed
+                    await initializeSocket();
+                }
+            } catch (error) {
+                // User not authenticated or token expired
+                console.log('No active session');
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        checkAuth();
     }, []);
 
     const login = async (email, password) => {
         try {
             const response = await api.post('/auth/login', { email, password });
-            const { user, token } = response.data.data;
+            const { user } = response.data.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
             
-            // Initialize Socket.io connection
-            initializeSocket(token);
+            // Initialize Socket.io connection and await it
+            await initializeSocket();
 
             return { success: true };
         } catch (error) {
@@ -54,14 +61,12 @@ export const AuthProvider = ({ children }) => {
     const register = async (name, email, password) => {
        try{
             const response = await api.post('/auth/signup', { name, email, password });
-            const { user, token } = response.data.data;
+            const { user } = response.data.data;
             
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
             
-            // Initialize Socket.io connection
-            initializeSocket(token);
+            // Initialize Socket.io connection and await it
+            await initializeSocket();
             
             return { success: true };
         
@@ -73,19 +78,22 @@ export const AuthProvider = ({ children }) => {
        }
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-        
-        // Disconnect Socket.io
-        disconnectSocket();
+    const logout = async () => {
+        try {
+            await api.post('/auth/logout');
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            setUser(null);
+            
+            // Disconnect Socket.io
+            disconnectSocket();
+        }
     };
 
     const updateUser = (updates) => {
         setUser((current) => {
             const nextUser = { ...current, ...updates };
-            localStorage.setItem('user', JSON.stringify(nextUser));
             return nextUser;
         });
     };

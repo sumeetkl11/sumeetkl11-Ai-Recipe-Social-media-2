@@ -5,8 +5,8 @@ export const addToMealPlan = async (req, res, next) => {
     try {
         const mealPlan = await MealPlan.create(req.user.id, req.body);
 
-        if (global.io && req.user?.id) {
-            global.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'add', mealPlan });
+        if (req.io && req.user?.id) {
+            req.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'add', mealPlan });
         }
 
         res
@@ -71,8 +71,8 @@ export const deleteMealPlan = async (req, res, next) => {
             });
         }
 
-        if (global.io && req.user?.id) {
-            global.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'delete', id });
+        if (req.io && req.user?.id) {
+            req.io.to(`user:${req.user.id}:mealplan`).emit('mealplan:update', { action: 'delete', id });
         }
 
         res.json({

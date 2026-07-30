@@ -3,8 +3,12 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { generalLimiter } from './middleware/rateLimiter.js';
+import { socketInjector } from './middleware/socketInjector.js';
 
 // import routes
 import authRoutes from './routes/auth.js';
@@ -55,8 +59,9 @@ const allowedOrigins = new Set([
 ]);
 
 function isAllowedOrigin(origin) {
+  // Reject null origins for security
   if (!origin) {
-    return true;
+    return false;
   }
 
   if (allowedOrigins.has(origin)) {
@@ -95,10 +100,30 @@ const io = new Server(httpServer, {
 // Initialize Socket.io handlers
 initializeSocialSocket(io);
 
-// Make io available globally for controllers
-global.io = io;
+// Store io instance on app instead of global
+app.set('io', io);
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 
 app.use(cors(corsOptions));
+app.use(cookieParser());
+
+// Apply general rate limiting to all routes
+app.use(generalLimiter);
+
+// Inject socket instance into req
+app.use(socketInjector);
 
 // Middleware
 app.use(express.json({ limit: '5mb' }));
