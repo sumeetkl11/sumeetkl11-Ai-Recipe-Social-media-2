@@ -2,24 +2,42 @@ import { useState, useMemo } from 'react';
 import Navbar from '../../components/Navbar';
 import { ShoppingBag, Search, Plus, Minus, MapPin, ChevronRight, X } from 'lucide-react';
 
+import tomatoImg from '../../assets/images/tomato.jpg';
+import onionImg from '../../assets/images/onion.jpg';
+import cucumberImg from '../../assets/images/cucumber.jpg';
+import carrotImg from '../../assets/images/carrot.jpg';
+import potatoImg from '../../assets/images/potato.jpg';
+import broccoliImg from '../../assets/images/broccoli.jpg';
+import bellPepperImg from '../../assets/images/bell_pepper.jpg';
+import garlicImg from '../../assets/images/garlic.jpg';
+import spinachImg from '../../assets/images/spinach.jpg';
+import cabbageImg from '../../assets/images/cabbage.jpg';
+import eggplantImg from '../../assets/images/eggplant.jpg';
+import greenChiliImg from '../../assets/images/green_chili.jpg';
+import corianderImg from '../../assets/images/coriander.jpg';
+import lemonImg from '../../assets/images/lemon.jpg';
+import peasImg from '../../assets/images/peas.jpg';
+import mushroomImg from '../../assets/images/mushroom.jpg';
+import cornImg from '../../assets/images/corn.jpg';
+
 const STATIC_PRODUCTS = [
-  { id: 1, name: "Tomato", price: 80, originalPrice: 100, discount: "20%", expiryDate: "2024-06-20", category: "Vegetables", image: "🍅" },
-  { id: 2, name: "Onion", price: 50, originalPrice: 50, discount: null, expiryDate: "2024-07-10", category: "Vegetables", image: "🧅" },
-  { id: 3, name: "Cucumber", price: 60, originalPrice: 75, discount: "20%", expiryDate: "2024-06-18", category: "Vegetables", image: "🥒" },
-  { id: 4, name: "Carrot", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: "🥕" },
-  { id: 5, name: "Potato", price: 40, originalPrice: 50, discount: "20%", expiryDate: "2024-07-15", category: "Vegetables", image: "🥔" },
-  { id: 6, name: "Broccoli", price: 120, originalPrice: 150, discount: "20%", expiryDate: "2024-06-19", category: "Vegetables", image: "🥦" },
-  { id: 7, name: "Bell Pepper (Red)", price: 100, originalPrice: 120, discount: "15%", expiryDate: "2024-06-22", category: "Vegetables", image: "🫑" },
-  { id: 8, name: "Garlic", price: 150, originalPrice: 150, discount: null, expiryDate: "2024-07-20", category: "Spices", image: "🧄" },
-  { id: 9, name: "Spinach", price: 90, originalPrice: 100, discount: "10%", expiryDate: "2024-06-17", category: "Vegetables", image: "🥬" },
-  { id: 10, name: "Cabbage", price: 55, originalPrice: 55, discount: null, expiryDate: "2024-06-28", category: "Vegetables", image: "🥬" },
-  { id: 11, name: "Eggplant", price: 85, originalPrice: 100, discount: "15%", expiryDate: "2024-06-21", category: "Vegetables", image: "🍆" },
-  { id: 13, name: "Green Chili", price: 120, originalPrice: 120, discount: null, expiryDate: "2024-06-19", category: "Spices", image: "🌶️" },
-  { id: 14, name: "Coriander", price: 60, originalPrice: 80, discount: "25%", expiryDate: "2024-06-16", category: "Herbs", image: "🌿" },
-  { id: 16, name: "Lemon", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: "🍋" },
-  { id: 18, name: "Peas", price: 95, originalPrice: 110, discount: "13%", expiryDate: "2024-06-20", category: "Vegetables", image: "🟢" },
-  { id: 27, name: "Mushroom", price: 180, originalPrice: 200, discount: "10%", expiryDate: "2024-06-19", category: "Vegetables", image: "🍄" },
-  { id: 28, name: "Corn", price: 75, originalPrice: 75, discount: null, expiryDate: "2024-06-23", category: "Vegetables", image: "🌽" }
+  { id: 1, name: "Tomato", price: 80, originalPrice: 100, discount: "20%", expiryDate: "2024-06-20", category: "Vegetables", image: tomatoImg },
+  { id: 2, name: "Onion", price: 50, originalPrice: 50, discount: null, expiryDate: "2024-07-10", category: "Vegetables", image: onionImg },
+  { id: 3, name: "Cucumber", price: 60, originalPrice: 75, discount: "20%", expiryDate: "2024-06-18", category: "Vegetables", image: cucumberImg },
+  { id: 4, name: "Carrot", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: carrotImg },
+  { id: 5, name: "Potato", price: 40, originalPrice: 50, discount: "20%", expiryDate: "2024-07-15", category: "Vegetables", image: potatoImg },
+  { id: 6, name: "Broccoli", price: 120, originalPrice: 150, discount: "20%", expiryDate: "2024-06-19", category: "Vegetables", image: broccoliImg },
+  { id: 7, name: "Bell Pepper (Red)", price: 100, originalPrice: 120, discount: "15%", expiryDate: "2024-06-22", category: "Vegetables", image: bellPepperImg },
+  { id: 8, name: "Garlic", price: 150, originalPrice: 150, discount: null, expiryDate: "2024-07-20", category: "Spices", image: garlicImg },
+  { id: 9, name: "Spinach", price: 90, originalPrice: 100, discount: "10%", expiryDate: "2024-06-17", category: "Vegetables", image: spinachImg },
+  { id: 10, name: "Cabbage", price: 55, originalPrice: 55, discount: null, expiryDate: "2024-06-28", category: "Vegetables", image: cabbageImg },
+  { id: 11, name: "Eggplant", price: 85, originalPrice: 100, discount: "15%", expiryDate: "2024-06-21", category: "Vegetables", image: eggplantImg },
+  { id: 13, name: "Green Chili", price: 120, originalPrice: 120, discount: null, expiryDate: "2024-06-19", category: "Spices", image: greenChiliImg },
+  { id: 14, name: "Coriander", price: 60, originalPrice: 80, discount: "25%", expiryDate: "2024-06-16", category: "Herbs", image: corianderImg },
+  { id: 16, name: "Lemon", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: lemonImg },
+  { id: 18, name: "Peas", price: 95, originalPrice: 110, discount: "13%", expiryDate: "2024-06-20", category: "Vegetables", image: peasImg },
+  { id: 27, name: "Mushroom", price: 180, originalPrice: 200, discount: "10%", expiryDate: "2024-06-19", category: "Vegetables", image: mushroomImg },
+  { id: 28, name: "Corn", price: 75, originalPrice: 75, discount: null, expiryDate: "2024-06-23", category: "Vegetables", image: cornImg }
 ];
 
 const CATEGORIES = [
@@ -151,9 +169,13 @@ export default function MarketplaceHub() {
                     </div>
                   )}
                   
-                  {/* Image Placeholder (Emoji for now) */}
-                  <div className="aspect-square bg-slate-50 rounded-xl mb-3 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-300">
-                    {product.image}
+                  {/* Product Image */}
+                  <div className="aspect-square bg-slate-50 rounded-xl mb-3 overflow-hidden flex items-center justify-center">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
                   
                   {/* Product Details */}
