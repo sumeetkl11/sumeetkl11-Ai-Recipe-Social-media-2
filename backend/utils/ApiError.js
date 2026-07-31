@@ -18,10 +18,6 @@ class ApiError extends Error {
         return new ApiError(400, message, errors);
     }
 
-    static unauthorized(message = 'Unauthorized') {
-        return new ApiError(401, message);
-    }
-
     static forbidden(message = 'Forbidden') {
         return new ApiError(403, message);
     }
@@ -30,20 +26,8 @@ class ApiError extends Error {
         return new ApiError(404, message);
     }
 
-    static conflict(message = 'Conflict') {
-        return new ApiError(409, message);
-    }
-
-    static tooManyRequests(message = 'Too many requests') {
-        return new ApiError(429, message);
-    }
-
     static internal(message = 'Internal server error') {
         return new ApiError(500, message, null, false);
-    }
-
-    static validation(errors) {
-        return new ApiError(400, 'Validation failed', errors);
     }
 
     // Convert to JSON response format

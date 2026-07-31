@@ -7,7 +7,6 @@ import { emitNotification } from '../../sockets/socialSocket.js';
 import cache from '../../services/cacheService.js';
 import ApiError from '../../utils/ApiError.js';
 import { parsePagination } from '../../utils/pagination.js';
-import { paginatedResponse, createdResponse, successResponse } from '../../utils/responseHelpers.js';
 
 /**
  * Get feed posts (paginated)
@@ -33,7 +32,12 @@ export const getFeedPosts = async (req, res, next) => {
       cache.TTL_CONFIG.FEED
     );
 
-    res.json(paginatedResponse(result.posts, page, limit, result.total));
+    const totalPages = Math.ceil(result.total / limit);
+    res.json({
+      success: true,
+      data: result.posts,
+      pagination: { page, limit, total: result.total, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 }
+    });
   } catch (error) {
     console.error('Error fetching feed posts:', error);
     next(ApiError.internal('Failed to fetch posts'));
@@ -68,7 +72,7 @@ export const createPost = async (req, res, next) => {
 
     req.io?.emit('feed:post_created', post);
 
-    res.status(201).json(createdResponse(post, 'Post created successfully'));
+    res.status(201).json({ success: true, message: 'Post created successfully', data: post });
   } catch (error) {
     console.error('Error creating post:', error);
     next(error instanceof ApiError ? error : ApiError.internal('Failed to create post'));
@@ -113,7 +117,7 @@ export const getPost = async (req, res, next) => {
       cache.TTL_CONFIG.POST
     );
 
-    res.json(successResponse(enrichedPost));
+    res.json({ success: true, data: enrichedPost });
   } catch (error) {
     console.error('Error getting post:', error);
     next(error instanceof ApiError ? error : ApiError.internal('Failed to fetch post'));

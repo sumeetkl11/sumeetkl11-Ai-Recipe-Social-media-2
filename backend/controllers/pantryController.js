@@ -41,7 +41,7 @@ export const getExpiringItems = async(req, res, next) => {
         const items = await PantryItem.getExpiringSoon(req.user.id, days);
         res.json({
             success: true,
-            data: items
+            data: { items }
         });
     } catch (error) {
         next(error);
@@ -66,7 +66,7 @@ export const addPantryItem = async(req, res, next) => {
 export const updatePantryItem = async(req, res, next) => {
     try {
         const { id } = req.params;
-        const item = await PantryItem.update(req.user.id, req.body);
+        const item = await PantryItem.update(id, req.user.id, req.body);
 
         if (!item) {
             return res.status(404).json({

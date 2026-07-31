@@ -8,7 +8,6 @@ import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { generalLimiter } from './middleware/rateLimiter.js';
-import { socketInjector } from './middleware/socketInjector.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // import routes
@@ -123,8 +122,11 @@ app.use(cookieParser());
 // Apply general rate limiting to all routes
 app.use(generalLimiter);
 
-// Inject socket instance into req
-app.use(socketInjector);
+// Inject socket instance into req (ponytail: inlined middleware)
+app.use((req, res, next) => {
+  req.io = req.app.get('io');
+  next();
+});
 
 // Middleware
 app.use(express.json({ limit: '5mb' }));

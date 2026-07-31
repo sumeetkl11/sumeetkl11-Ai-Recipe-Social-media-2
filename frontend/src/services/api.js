@@ -23,7 +23,10 @@ let isRedirecting = false;
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && !isRedirecting) {
+        // ponytail: don't redirect if already on auth pages (prevents reload loop)
+        const onAuthPage = ['/login', '/signup'].includes(window.location.pathname);
+        
+        if (error.response?.status === 401 && !isRedirecting && !onAuthPage) {
             // Token expired or invalid - debounce redirect to handle concurrent 401s
             isRedirecting = true;
             

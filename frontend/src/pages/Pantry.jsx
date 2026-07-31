@@ -36,7 +36,7 @@ const Pantry = () => {
     }, []);
 
     const refreshPantry = useCallback(async (options = {}) => {
-        const silent = options.silent && items.length > 0;
+        const silent = options.silent;
 
         try {
             if (silent) {
@@ -50,9 +50,14 @@ const Pantry = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [fetchExpiringItems, fetchPantryItems, items.length]);
+    }, [fetchExpiringItems, fetchPantryItems]);
 
-    useRevalidateOnFocus(() => refreshPantry({ silent: true }));
+    // ponytail: disabled auto-refresh to prevent reload on interaction + reduce rate limit usage
+    // useRevalidateOnFocus(() => refreshPantry({ silent: true }));
+
+    useEffect(() => {
+        void refreshPantry();
+    }, [refreshPantry]);
 
     useEffect(() => {
         filterItems();
@@ -87,11 +92,13 @@ const Pantry = () => {
     };
 
     const handleRemoveExpired = async () => {
-        // Find all expired items
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         const expiredItems = items.filter(item => {
             if (!item.expiry_date) return false;
             const expiryDate = new Date(item.expiry_date);
+            expiryDate.setHours(0, 0, 0, 0);
             return expiryDate < today;
         });
 
@@ -100,19 +107,31 @@ const Pantry = () => {
             return;
         }
 
-        if (!confirm(`Remove ${expiredItems.length} expired item${expiredItems.length > 1 ? 's' : ''}?`)) return;
+        const confirmed = window.confirm(`Remove ${expiredItems.length} expired item${expiredItems.length > 1 ? 's' : ''}?`);
+        if (!confirmed) return;
 
         try {
-            // Delete all expired items
+            setRefreshing(true);
+
+            const remainingIds = new Set(items.map(item => item.id));
             for (const item of expiredItems) {
-                await api.delete(`/pantry/${item.id}`);
+                remainingIds.delete(item.id);
+                try {
+                    await api.delete(`/pantry/${item.id}`);
+                } catch (error) {
+                    console.error(`Failed to delete pantry item ${item.id}:`, error);
+                }
             }
-            
-            // Update items list
-            setItems(items.filter(item => item.id && expiredItems.every(exp => exp.id !== item.id)));
+
+            const nextItems = items.filter(item => remainingIds.has(item.id));
+            setItems(nextItems);
+            await fetchExpiringItems();
             toast.success(`Removed ${expiredItems.length} expired item${expiredItems.length > 1 ? 's' : ''}`);
         } catch (error) {
+            console.error('Error removing expired items:', error);
             toast.error('Error removing expired items');
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -145,6 +164,7 @@ const Pantry = () => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <button
+                            type="button"
                             onClick={handleRemoveExpired}
                             className="secondary-button rounded-2xl px-4 py-2.5 text-sm font-semibold text-rose-600"
                         >
@@ -152,6 +172,7 @@ const Pantry = () => {
                             Remove All Expired
                         </button>
                         <button
+                            type="button"
                             onClick={() => setShowAddModal(true)}
                             className="cta-button rounded-2xl px-4 py-2.5 text-sm font-semibold"
                         >
@@ -299,7 +320,7 @@ const PantryItemCard = ({ item, onDelete, isExpiring }) => {
                                         ? 'text-amber-600 font-medium' // up to 7 days → amber
                                         : 'text-gray-600'              // normal → gray
                                 }`}>
-                                {isExpired ? 'Expired' : 'Expires'}: {format(new Date(item.expiry_date), 'MMM dd, yyyy')}
+                                {isExpired ? 'Expired' : 'Expires'}: {new Date(item.expiry_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </span>
                         </div>
                     )}

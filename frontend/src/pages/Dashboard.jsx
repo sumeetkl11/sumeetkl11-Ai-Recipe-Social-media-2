@@ -59,7 +59,8 @@ const Dashboard = () => {
     }
   }, [popularPosts.length, recentRecipes.length, upcomingMeals.length]);
 
-  useRevalidateOnFocus(() => fetchDashboardData({ silent: true }));
+  // ponytail: disabled auto-refresh - 6 API calls every 45s exhausts rate limit (120 req/15min just from Dashboard)
+  // useRevalidateOnFocus(() => fetchDashboardData({ silent: true }));
 
   if (loading) {
     return (

@@ -11,8 +11,8 @@ const TARGET_SELECTOR = [
   '.recipe-list-item',
   '.meal-list-item',
   '.conversation-item',
-  '.message',
-  '.auth-card'
+  '.message'
+  // ponytail: removed .auth-card - forms should prioritize functionality over animations
 ].join(', ');
 
 export default function RouteSceneAnimator() {
