@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import {
   ChefHat,
   Sparkles,
@@ -33,9 +34,11 @@ const RECIPE_MOODS = [
 ];
 
 const RecipeGenerator = () => {
-  const [ingredients, setIngredients] = useState([]);
+  const location = useLocation();
+  const [ingredients, setIngredients] = useState(location.state?.ingredients || []);
   const [inputValue, setInputValue] = useState('');
-  const [usePantry, setUsePantry] = useState(false);
+  const [usePantry, setUsePantry] = useState(Boolean(location.state?.usePantry));
+  const [pantryItemsList, setPantryItemsList] = useState([]);
   const [cuisineType, setCuisineType] = useState('Any');
   const [dietaryRestrictions, setDietaryRestrictions] = useState([]);
   const [servings, setServings] = useState(4);
@@ -45,6 +48,14 @@ const RecipeGenerator = () => {
   const [saving, setSaving] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+
+  useEffect(() => {
+    if (usePantry && pantryItemsList.length === 0) {
+      api.get('/pantry')
+        .then(res => setPantryItemsList(res.data.data.items || []))
+        .catch(err => console.error('Error fetching pantry preview:', err));
+    }
+  }, [usePantry, pantryItemsList.length]);
 
   useEffect(() => {
     const fetchUserPreferences = async () => {
@@ -75,9 +86,14 @@ const RecipeGenerator = () => {
     fetchUserPreferences();
   }, []);
 
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [generatedRecipe?.image_url]);
+
   const addIngredient = () => {
-    if (inputValue.trim() && !ingredients.includes(inputValue.trim())) {
-      setIngredients([...ingredients, inputValue.trim()]);
+    const trimmed = inputValue.trim();
+    if (trimmed && !ingredients.some((item) => item.toLowerCase() === trimmed.toLowerCase())) {
+      setIngredients([...ingredients, trimmed]);
       setInputValue('');
     }
   };
@@ -95,9 +111,13 @@ const RecipeGenerator = () => {
   };
 
   const addSuggestedIngredients = (items) => {
-    const nextIngredients = new Set(ingredients);
-    items.forEach((item) => nextIngredients.add(item));
-    setIngredients([...nextIngredients]);
+    const nextIngredients = [...ingredients];
+    items.forEach((item) => {
+      if (!nextIngredients.some((existing) => existing.toLowerCase() === item.trim().toLowerCase())) {
+        nextIngredients.push(item.trim());
+      }
+    });
+    setIngredients(nextIngredients);
   };
 
   const handleGenerate = async () => {
@@ -215,17 +235,36 @@ const RecipeGenerator = () => {
                 <span className="text-sm text-slate-600">{ingredients.length} selected</span>
               </div>
 
-              <div className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/80 p-4">
-                <input
-                  type="checkbox"
-                  id="use-pantry"
-                  checked={usePantry}
-                  onChange={(event) => setUsePantry(event.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 accent-amber-400"
-                />
-                <label htmlFor="use-pantry" className="text-sm font-medium text-slate-700">
-                  Use ingredients from my pantry
-                </label>
+              <div className="mb-4 rounded-2xl border border-white/10 bg-white/80 p-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="use-pantry"
+                    checked={usePantry}
+                    onChange={(event) => setUsePantry(event.target.checked)}
+                    className="h-4 w-4 rounded border-white/20 accent-amber-400 cursor-pointer"
+                  />
+                  <label htmlFor="use-pantry" className="text-sm font-medium text-slate-700 cursor-pointer">
+                    Use ingredients from my pantry
+                  </label>
+                </div>
+                {usePantry && pantryItemsList.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-200/60 text-xs">
+                    <span className="font-semibold text-slate-700">Pantry items ready to use:</span>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {pantryItemsList.slice(0, 10).map((item) => (
+                        <span key={item.id} className="inline-flex items-center rounded-full border border-white/40 bg-amber-300/15 px-2.5 py-1 font-medium text-amber-800">
+                          {item.name} ({item.quantity} {item.unit})
+                        </span>
+                      ))}
+                      {pantryItemsList.length > 10 && (
+                        <span className="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 font-medium text-slate-600">
+                          +{pantryItemsList.length - 10} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mb-4 flex gap-2">
@@ -270,9 +309,12 @@ const RecipeGenerator = () => {
             <div className="glass-card space-y-5 p-6">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-2xl text-slate-950">Preferences</h2>
-                <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                  {preferencesLoaded ? 'loaded' : 'loading'}
-                </span>
+                {preferencesLoaded && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-700">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Synced with your preferences
+                  </span>
+                )}
               </div>
 
               <div>
@@ -383,13 +425,20 @@ const RecipeGenerator = () => {
               </div>
             ) : generatedRecipe ? (
               <div className="glass-card overflow-hidden p-0">
-                {/* AI-Generated Image */}
+                {/* Suggested Photo */}
                 {generatedRecipe.image_url ? (
                   <div className="relative h-72 overflow-hidden">
                     <img
+                      key={`${generatedRecipe.name}-${generatedRecipe.image_url}`}
                       src={generatedRecipe.image_url}
                       alt={generatedRecipe.name}
                       onLoad={() => setImageLoaded(true)}
+                      onError={() => setImageLoaded(true)}
+                      ref={(imgEl) => {
+                        if (imgEl && imgEl.complete && !imageLoaded) {
+                          setImageLoaded(true);
+                        }
+                      }}
                       className={`h-full w-full object-cover transition-opacity duration-500 ${
                         imageLoaded ? 'opacity-100' : 'opacity-0'
                       }`}
@@ -399,7 +448,7 @@ const RecipeGenerator = () => {
                     <div className="absolute bottom-4 left-4">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
                         <Sparkles className="h-3 w-3" />
-                        AI-Generated Photo
+                        Food Photography
                       </span>
                     </div>
                   </div>
@@ -477,20 +526,36 @@ const RecipeGenerator = () => {
                     )}
                   </div>
 
-                  <button
-                    onClick={handleSaveRecipe}
-                    disabled={saving}
-                    className="secondary-button mt-6 flex w-full items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {saving ? (
-                      'Saving...'
-                    ) : (
-                      <>
-                        <Bookmark className="h-5 w-5" />
-                        Save Recipe
-                      </>
-                    )}
-                  </button>
+                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={handleSaveRecipe}
+                      disabled={saving}
+                      className="cta-button flex-1 justify-center disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {saving ? (
+                        'Saving...'
+                      ) : (
+                        <>
+                          <Bookmark className="h-5 w-5" />
+                          Save Recipe
+                        </>
+                      )}
+                    </button>
+                    <Link
+                      to="/recipes"
+                      className="secondary-button justify-center"
+                    >
+                      View All Saved
+                    </Link>
+                    <button
+                      onClick={handleGenerate}
+                      disabled={generating}
+                      className="secondary-button justify-center text-amber-700 hover:text-amber-800"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Regenerate
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -511,6 +576,18 @@ const RecipeGenerator = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Sticky Mobile Generate Button Bar */}
+      <div className="sticky bottom-4 z-40 mx-4 mt-6 block md:hidden">
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="cta-button w-full shadow-xl justify-center py-3.5 text-base font-semibold"
+        >
+          <Sparkles className="h-5 w-5" />
+          {generating ? 'Crafting Recipe...' : 'Generate Recipe Now'}
+        </button>
       </div>
     </div>
   );

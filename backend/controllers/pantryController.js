@@ -51,7 +51,29 @@ export const getExpiringItems = async(req, res, next) => {
 // add pantry item
 export const addPantryItem = async(req, res, next) => {
     try {
-        const item = await PantryItem.create(req.user.id, req.body);
+        const { name, quantity } = req.body;
+        if (!name || typeof name !== 'string' || !name.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Item name is required'
+            });
+        }
+
+        const numQuantity = Number(quantity);
+        if (isNaN(numQuantity) || numQuantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Quantity must be a positive number'
+            });
+        }
+
+        const itemData = {
+            ...req.body,
+            name: name.trim(),
+            quantity: numQuantity
+        };
+
+        const item = await PantryItem.create(req.user.id, itemData);
         res.status(201).json({
             success: true,
             message: 'Pantry item added successfully',
@@ -66,7 +88,30 @@ export const addPantryItem = async(req, res, next) => {
 export const updatePantryItem = async(req, res, next) => {
     try {
         const { id } = req.params;
-        const item = await PantryItem.update(id, req.user.id, req.body);
+        const updates = { ...req.body };
+
+        if (updates.name !== undefined) {
+            if (typeof updates.name !== 'string' || !updates.name.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Item name cannot be empty'
+                });
+            }
+            updates.name = updates.name.trim();
+        }
+
+        if (updates.quantity !== undefined) {
+            const numQuantity = Number(updates.quantity);
+            if (isNaN(numQuantity) || numQuantity <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantity must be a positive number'
+                });
+            }
+            updates.quantity = numQuantity;
+        }
+
+        const item = await PantryItem.update(id, req.user.id, updates);
 
         if (!item) {
             return res.status(404).json({

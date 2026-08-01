@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { ChefHat, UtensilsCrossed, Calendar, Clock, ArrowRight, Sparkles, Flame, Soup, NotebookPen, Heart, MessageCircle } from 'lucide-react';
+import { ChefHat, UtensilsCrossed, Calendar, Clock, ArrowRight, Sparkles, Flame, Soup, NotebookPen, Heart, MessageCircle, RotateCw } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '../services/api';
 import useRevalidateOnFocus from '../hooks/useRevalidateOnFocus';
 
@@ -26,7 +27,7 @@ const Dashboard = () => {
         setLoading(true);
       }
 
-      const [recipesRes, pantryRes, mealsRes, recentRes, upcomingRes, postsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         api.get('/recipes'),
         api.get('/pantry/stats'),
         api.get('/meal-plans/stats'),
@@ -35,22 +36,49 @@ const Dashboard = () => {
         api.get('/posts?limit=20&page=1')
       ]);
 
-      setStats({
-        totalRecipes: recipesRes.data.data.stats?.total_recipes || recipesRes.data.data?.recipes?.length || 0,
-        pantryItems: pantryRes.data.data.total_items || 0,
-        mealsThisWeek: mealsRes.data.data.this_week_count || 0
-      });
-      setRecentRecipes(recentRes.data.data.recipes || []);
-      setUpcomingMeals(upcomingRes.data.data.meals || []);
-      setPopularPosts(
-        [...(postsRes.data.data || [])]
-          .sort((a, b) => {
-            const scoreA = (a.like_count || 0) * 3 + (a.comment_count || 0);
-            const scoreB = (b.like_count || 0) * 3 + (b.comment_count || 0);
-            return scoreB - scoreA;
-          })
-          .slice(0, 4)
-      );
+      const [recipesRes, pantryRes, mealsRes, recentRes, upcomingRes, postsRes] = results;
+
+      const failedCount = results.filter((r) => r.status === 'rejected').length;
+      if (failedCount > 0) {
+        toast.error(`${failedCount} dashboard section(s) failed to load — showing available data`);
+      }
+
+      if (recipesRes.status === 'fulfilled' || pantryRes.status === 'fulfilled' || mealsRes.status === 'fulfilled') {
+        const recipesData = recipesRes.status === 'fulfilled' ? recipesRes.value.data?.data : null;
+        const pantryData = pantryRes.status === 'fulfilled' ? pantryRes.value.data?.data : null;
+        const mealsData = mealsRes.status === 'fulfilled' ? mealsRes.value.data?.data : null;
+
+        setStats((prev) => ({
+          totalRecipes: recipesData?.stats?.total_recipes || recipesData?.recipes?.length || prev.totalRecipes,
+          pantryItems: pantryData?.total_items ?? prev.pantryItems,
+          mealsThisWeek: mealsData?.this_week_count ?? prev.mealsThisWeek
+        }));
+      }
+
+      if (recentRes.status === 'fulfilled') {
+        const recipesList = recentRes.value.data?.data?.recipes || (Array.isArray(recentRes.value.data?.data) ? recentRes.value.data.data : []);
+        setRecentRecipes(recipesList);
+      }
+
+      if (upcomingRes.status === 'fulfilled') {
+        const mealsList = upcomingRes.value.data?.data?.meals || (Array.isArray(upcomingRes.value.data?.data) ? upcomingRes.value.data.data : []);
+        setUpcomingMeals(mealsList);
+      }
+
+      if (postsRes.status === 'fulfilled') {
+        const postsList = postsRes.value.data?.data || postsRes.value.data?.posts || [];
+        if (Array.isArray(postsList)) {
+          setPopularPosts(
+            [...postsList]
+              .sort((a, b) => {
+                const scoreA = (a.like_count || 0) * 3 + (a.comment_count || 0);
+                const scoreB = (b.like_count || 0) * 3 + (b.comment_count || 0);
+                return scoreB - scoreA;
+              })
+              .slice(0, 4)
+          );
+        }
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -58,9 +86,6 @@ const Dashboard = () => {
       setRefreshing(false);
     }
   }, [popularPosts.length, recentRecipes.length, upcomingMeals.length]);
-
-  // ponytail: disabled auto-refresh - 6 API calls every 45s exhausts rate limit (120 req/15min just from Dashboard)
-  // useRevalidateOnFocus(() => fetchDashboardData({ silent: true }));
 
   if (loading) {
     return (
@@ -88,15 +113,21 @@ const Dashboard = () => {
             <div className="absolute -right-10 top-0 h-40 w-40 rounded-full bg-orange-400/20 blur-3xl" />
             <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-amber-200/10 blur-3xl" />
             <div className="relative">
-              <div className="eyebrow mb-4">
-                <Sparkles className="h-4 w-4" />
-                Daily Mise en Place
-              </div>
-              {refreshing && (
-                <div className="glass-badge mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Live refresh
+              <div className="mb-4 flex items-center justify-between">
+                <div className="eyebrow">
+                  <Sparkles className="h-4 w-4" />
+                  Daily Mise en Place
                 </div>
-              )}
+                <button
+                  onClick={() => fetchDashboardData({ silent: true })}
+                  disabled={refreshing}
+                  className="glass-badge flex items-center gap-1.5 text-xs font-medium text-slate-700 transition hover:bg-white/80"
+                  title="Refresh Dashboard Data"
+                >
+                  <RotateCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                </button>
+              </div>
               <h1 className="max-w-2xl font-display text-4xl leading-tight text-slate-950 md:text-6xl">
                 Build dinner plans that look and feel restaurant-ready.
               </h1>
@@ -140,12 +171,6 @@ const Dashboard = () => {
               icon={<ChefHat className="h-5 w-5" />}
             />
           </div>
-        </section>
-
-        <section className="page-heading mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          <StatCard icon={<ChefHat className="h-6 w-6" />} label="Total Recipes" value={stats.totalRecipes} accent="amber" />
-          <StatCard icon={<UtensilsCrossed className="h-6 w-6" />} label="Pantry Items" value={stats.pantryItems} accent="sky" />
-          <StatCard icon={<Calendar className="h-6 w-6" />} label="Meals This Week" value={stats.mealsThisWeek} accent="rose" />
         </section>
 
         <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">

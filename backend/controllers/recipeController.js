@@ -1,50 +1,10 @@
 import Recipe from "../models/Recipe.js";
 import PantryItem from "../models/PantryItem.js";
-import { generateRecipe as generateRecipeFromAI, 
+import { 
+    generateRecipe as generateRecipeFromAI,
     generatePantrySuggestions as generatePantrySuggestionsAI,
     generateRecipeImage } from "../utils/gemini.js";
 import { ensureDefaultRecipesForUser } from "../utils/defaultRecipes.js";
-
-// generate recipe using AI
-export const generateRecipe = async (req, res, next) => {
-    try {
-        const { ingredients, diet, cuisine, occasion } = req.body;
-        
-        if (!ingredients || !ingredients.length) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Ingredients are required' 
-            });
-        }
-        
-        const recipeData = await generateRecipeFromAI({
-            ingredients,
-            dietaryRestrictions: diet,
-            cuisine: cuisine,
-            cookingTime: occasion
-        });
-
-        const imageUrl = await generateRecipeImage(
-            recipeData.name,
-            recipeData.description,
-            recipeData.cuisineType || cuisine
-        );
-
-        const recipe = await Recipe.create(req.user.id, {
-            ...recipeData,
-            ingredients: recipeData.ingredients,
-            image_url: imageUrl
-        });
-
-        res.status(201).json({
-            success: true,
-            data: { recipe }
-        });
-        
-    } catch (error) {
-        next(error);
-    }
-};
 
 // generate pantry suggestions using AI
 export const generatePantrySuggestions = async (req, res, next) => {
@@ -171,8 +131,6 @@ export const getAllRecipes = async (req, res, next) => {
             limit: limit ? parseInt(limit) : undefined,
             offset: offset ? parseInt(offset) : undefined
         });
-        
-        console.log('Recipes from model:', recipes);
         
         // Get stats for dashboard
         const stats = await Recipe.getStats(req.user.id);

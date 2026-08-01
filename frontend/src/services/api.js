@@ -11,6 +11,7 @@ export function buildApiUrl(path = '') {
 // Create axios instance with credentials support for httpOnly cookies
 const api = axios.create({
     baseURL: API_URL,
+    timeout: 45000, // 45 seconds timeout for requests
     headers: {
         'Content-Type': 'application/json',
     },

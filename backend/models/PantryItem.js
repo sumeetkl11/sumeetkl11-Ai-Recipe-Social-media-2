@@ -6,12 +6,17 @@ class PantryItem {
     static async create(userId, itemData) {
         const {name, quantity, unit, category, expiry_date, is_running_low = false} = itemData;
         
+        const numQuantity = Number(quantity);
+        if (!Number.isFinite(numQuantity) || numQuantity <= 0) {
+            throw new Error('Quantity must be a positive number');
+        }
+
         const result = await pool.query(
             `INSERT INTO pantry_items 
             (user_id, name, quantity, unit, category, expiry_date, is_running_low) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) 
             RETURNING *`,
-            [userId, name, quantity, unit, category, expiry_date, is_running_low]
+            [userId, name, numQuantity, unit, category, expiry_date, is_running_low]
         );
         return result.rows[0];
     }
@@ -51,13 +56,16 @@ class PantryItem {
 
     // Get item expiring soon (within 7 days)
     static async getExpiringSoon(userId, days = 7) {
+        const safeDays = Math.min(Math.max(parseInt(days) || 7, 1), 30);
         const result = await pool.query(
             `SELECT * FROM pantry_items 
             WHERE user_id = $1 
             AND expiry_date IS NOT NULL 
+            AND expiry_date >= CURRENT_DATE
             AND expiry_date <= CURRENT_DATE + INTERVAL '1 day' * $2
-            ORDER BY expiry_date ASC`,
-            [userId, days]
+            ORDER BY expiry_date ASC
+            LIMIT 100`,
+            [userId, safeDays]
         );
         return result.rows;
     }
@@ -74,6 +82,7 @@ class PantryItem {
     // update pantry item
     static async update(id, userId, updates) {
         const {name, quantity, unit, category, expiry_date, is_running_low} = updates;
+        const sanitizedExpiry = (expiry_date === '' || expiry_date === undefined) ? null : expiry_date;
         
         const result = await pool.query(
             `UPDATE pantry_items 
@@ -85,7 +94,7 @@ class PantryItem {
             is_running_low = COALESCE($6, is_running_low) 
             WHERE id = $7 AND user_id = $8 
             RETURNING *`,
-            [name, quantity, unit, category, expiry_date, is_running_low, id, userId]
+            [name, quantity, unit, category, sanitizedExpiry, is_running_low, id, userId]
         );
         return result.rows[0];
     }

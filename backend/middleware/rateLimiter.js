@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redisClient } from '../cache/redis.js';
 
@@ -14,15 +14,29 @@ const redisStore = (prefix) =>
           })
         : undefined;
 
+const userOrIpKeyGenerator = (req) => (req.user?.id ? `user:${req.user.id}` : ipKeyGenerator(req.ip));
+
 // General API rate limit - 300 requests per 15 minutes
 export const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
     skipSuccessfulRequests: false,
-    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
+    keyGenerator: userOrIpKeyGenerator,
+    message: { success: false, message: 'Too many requests, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
     store: redisStore('rl:general:')
+});
+
+// Dedicated rate limit for AI generation - 20 requests per hour
+export const aiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    keyGenerator: userOrIpKeyGenerator,
+    message: { success: false, message: 'AI generation limit reached, please try again in an hour' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    store: redisStore('rl:ai:')
 });
 
 // Strict rate limit for auth endpoints - 5 requests per 15 minutes
@@ -40,6 +54,7 @@ export const authLimiter = rateLimit({
 export const writeLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 20,
+    keyGenerator: userOrIpKeyGenerator,
     message: { success: false, message: 'Too many write requests, please slow down' },
     standardHeaders: true,
     legacyHeaders: false,
