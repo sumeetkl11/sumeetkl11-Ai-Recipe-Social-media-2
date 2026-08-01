@@ -142,55 +142,29 @@ export const generateRecipe = async ({
 Create a DIFFERENT recipe with a unique approach. Vary the cooking method, flavor profile, or presentation style.`;
     }
 
-    const systemPrompt = 'You are a professional chef. Return ONLY valid JSON. No markdown, no code fences, no comments.';
+    const systemPrompt = 'You are a professional chef. Return ONLY valid JSON with no markdown or code fences.';
 
-    const userPrompt = `Generate a detailed recipe with the following requirements:
-Ingredients to use: ${ingredients.length > 0 ? ingredients.join(', ') : 'Use pantry items'}${pantryContext}
+    const userPrompt = `Create a ${cuisine} recipe for ${servings} servings using: ${ingredients.length > 0 ? ingredients.join(', ') : 'pantry items'}.
+${pantryContext}
 ${dietaryInfo}
-Cuisine type: ${cuisine}
-Servings: ${servings}
 Cooking time: ${timeGuide[cookingTime] || 'any'}${regenerationPrompt}
 
-IMPORTANT INSTRUCTIONS:
-1. In the "instructions" array, include SPECIFIC QUANTITIES from the ingredients list in each step where ingredients are used.
-   Example: "Crack 2 large eggs into the ramekin" NOT "Crack eggs into the ramekin"
-   Example: "Add 1 cup of milk and 2 tablespoons of butter" NOT "Add milk and butter"
+Include specific quantities in instructions (e.g., "Add 2 cups flour" not "Add flour").
 
-2. Make sure EVERY instruction step that mentions an ingredient includes its specific quantity and unit.
-
-3. Calculate nutrition values accurately based on the ingredient quantities. Consider:
-   - Standard USDA values for common ingredients
-   - Cooking method impacts (e.g., absorbed oil during frying)
-   - Per-serving breakdown (total nutrition / servings)
-
-Return a JSON object with EXACTLY these fields:
+Return this JSON structure with actual values:
 {
   "name": "Recipe Name",
-  "description": "Brief description of the dish",
+  "description": "Brief description",
   "cuisineType": "${cuisine}",
-  "difficulty": "Easy|Medium|Hard",
+  "difficulty": "Easy",
   "prepTime": 15,
   "cookTime": 30,
   "servings": ${servings},
-  "ingredients": [
-    { "name": "ingredient name", "quantity": 2, "unit": "large" }
-  ],
-  "instructions": [
-    "Preheat oven to 375°F (190°C). Butter 2 ramekins.",
-    "Crack 2 large eggs into each buttered ramekin.",
-    "Add 2 tablespoons of cream and season with 1/4 teaspoon salt and 1/8 teaspoon pepper."
-  ],
-  "nutrition": {
-    "calories": 400,
-    "protein": 20,
-    "carbs": 45,
-    "fat": 15,
-    "fiber": 5
-  },
+  "ingredients": [{"name": "ingredient", "quantity": 1, "unit": "cup"}],
+  "instructions": ["Step 1", "Step 2"],
+  "nutrition": {"calories": 400, "protein": 20, "carbs": 45, "fat": 15, "fiber": 5},
   "cookingTips": ["Tip 1", "Tip 2"]
-}
-All numeric fields (prepTime, cookTime, servings, nutrition values) must be numbers, not strings.
-Make the recipe creative, delicious, and use the provided ingredients effectively!`;
+}`;
 
     try {
         const recipe = await groqChat(systemPrompt, userPrompt);
@@ -238,9 +212,13 @@ Return ONLY this JSON object:
     }
 };
 
-export const generateRecipeImage = async (recipeName, description) => {
-    const prompt = `professional food photography of ${recipeName}, ${description || ''}, studio lighting, appetizing, on a plate, high detail`.trim();
-    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+export const generateRecipeImage = async (recipeName, description, cuisineType, seed = Math.floor(Math.random() * 100000)) => {
+    const prompt = encodeURIComponent(
+        `${recipeName}, ${description || ''}. Close-up professional food photography, ` +
+        `served on a plate, natural daylight, shallow depth of field, garnished, ` +
+        `45-degree angle shot, appetizing, high resolution, no text, no watermark`
+    );
+    return `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&model=flux&nologo=true&enhance=true&seed=${seed}`;
 };
 
 export default {
