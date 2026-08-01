@@ -4,7 +4,6 @@ import Navbar from '../components/Navbar';
 import { ChefHat, UtensilsCrossed, Calendar, Clock, ArrowRight, Sparkles, Flame, Soup, NotebookPen, Heart, MessageCircle, RotateCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
-import useRevalidateOnFocus from '../hooks/useRevalidateOnFocus';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -51,7 +50,7 @@ const Dashboard = () => {
         setStats((prev) => ({
           totalRecipes: recipesData?.stats?.total_recipes || recipesData?.recipes?.length || prev.totalRecipes,
           pantryItems: pantryData?.total_items ?? prev.pantryItems,
-          mealsThisWeek: mealsData?.this_week_count ?? prev.mealsThisWeek
+          mealsThisWeek: mealsData?.stats?.this_week_count ?? prev.mealsThisWeek
         }));
       }
 
@@ -86,6 +85,12 @@ const Dashboard = () => {
       setRefreshing(false);
     }
   }, [popularPosts.length, recentRecipes.length, upcomingMeals.length]);
+
+  // ponytail: load once on mount only — the focus-refresh hook stays disabled to respect rate limits
+  useEffect(() => {
+    void fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (
