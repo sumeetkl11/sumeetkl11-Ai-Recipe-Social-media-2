@@ -55,6 +55,12 @@ export const generatePantrySuggestions = async (req, res, next) => {
         });
 
     } catch (error) {
+        if (error?.status === 429 || /quota|429/i.test(error?.message || '')) {
+            return res.status(429).json({
+                success: false,
+                message: 'AI quota exhausted \u2014 please try again in about 15 minutes.'
+            });
+        }
         next(error);
     }
 };

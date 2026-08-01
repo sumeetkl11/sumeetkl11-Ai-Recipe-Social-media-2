@@ -90,6 +90,18 @@ export const errorHandler = (err, req, res, next) => {
         });
     }
 
+    // Last-resort guard: map AI provider quota / 429 errors to 503
+    if (err?.status === 429 || /quota|429/i.test(err?.message || '')) {
+        return res.status(503).json({
+            success: false,
+            error: {
+                message: 'AI service temporarily unavailable — please try again shortly.',
+                statusCode: 503,
+                timestamp: new Date().toISOString()
+            }
+        });
+    }
+
     // Default to 500 internal server error
     const statusCode = err.statusCode || 500;
     const message = process.env.NODE_ENV === 'production' 
