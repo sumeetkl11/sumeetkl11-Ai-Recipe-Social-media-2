@@ -106,11 +106,15 @@ const groqChat = async (systemPrompt, userPrompt) => {
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
 export const generateRecipe = async ({
-    ingredients,
+    ingredients = [],
+    pantryItems = [],
     dietaryRestrictions = [],
     cuisine = 'any',
     servings = 4,
     cookingTime = 'medium',
+    regenerate = false,
+    previousRecipe = null,
+    attemptNumber = 1
 }) => {
     const dietaryInfo = dietaryRestrictions.length > 0
         ? `Dietary restrictions: ${dietaryRestrictions.join(', ')}`
@@ -122,28 +126,60 @@ export const generateRecipe = async ({
         long: 'over 60 minutes'
     };
 
+    // Build pantry context with quantities
+    let pantryContext = '';
+    if (pantryItems.length > 0) {
+        pantryContext = '\n\nPantry items available (use these quantities as guidance):\n';
+        pantryContext += pantryItems.map(item => 
+            `- ${item.name}: ${item.quantity} ${item.unit || 'unit(s)'}`
+        ).join('\n');
+    }
+
+    // Regeneration guidance
+    let regenerationPrompt = '';
+    if (regenerate && previousRecipe) {
+        regenerationPrompt = `\n\nThis is regeneration attempt #${attemptNumber}. Previous recipe was "${previousRecipe.name}". 
+Create a DIFFERENT recipe with a unique approach. Vary the cooking method, flavor profile, or presentation style.`;
+    }
+
     const systemPrompt = 'You are a professional chef. Return ONLY valid JSON. No markdown, no code fences, no comments.';
 
     const userPrompt = `Generate a detailed recipe with the following requirements:
-Ingredients available: ${ingredients.join(', ')}
+Ingredients to use: ${ingredients.length > 0 ? ingredients.join(', ') : 'Use pantry items'}${pantryContext}
 ${dietaryInfo}
 Cuisine type: ${cuisine}
 Servings: ${servings}
-Cooking time: ${timeGuide[cookingTime] || 'any'}
+Cooking time: ${timeGuide[cookingTime] || 'any'}${regenerationPrompt}
+
+IMPORTANT INSTRUCTIONS:
+1. In the "instructions" array, include SPECIFIC QUANTITIES from the ingredients list in each step where ingredients are used.
+   Example: "Crack 2 large eggs into the ramekin" NOT "Crack eggs into the ramekin"
+   Example: "Add 1 cup of milk and 2 tablespoons of butter" NOT "Add milk and butter"
+
+2. Make sure EVERY instruction step that mentions an ingredient includes its specific quantity and unit.
+
+3. Calculate nutrition values accurately based on the ingredient quantities. Consider:
+   - Standard USDA values for common ingredients
+   - Cooking method impacts (e.g., absorbed oil during frying)
+   - Per-serving breakdown (total nutrition / servings)
 
 Return a JSON object with EXACTLY these fields:
 {
   "name": "Recipe Name",
   "description": "Brief description of the dish",
   "cuisineType": "${cuisine}",
-  "difficulty": "Easy",
+  "difficulty": "Easy|Medium|Hard",
   "prepTime": 15,
   "cookTime": 30,
   "servings": ${servings},
   "ingredients": [
-    { "name": "ingredient name", "quantity": 1, "unit": "cup" }
+    { "name": "ingredient name", "quantity": 2, "unit": "large" }
   ],
-  "instructions": ["Step 1", "Step 2"],
+  "instructions": [
+    "Preheat oven to 375°F (190°C). Butter 2 ramekins.",
+    "Crack 2 large eggs into each buttered ramekin.",
+    "Add 2 tablespoons of cream and season with 1/4 teaspoon salt and 1/8 teaspoon pepper."
+  ],
   "nutrition": {
     "calories": 400,
     "protein": 20,

@@ -4,6 +4,7 @@ import {
     generateRecipe as generateRecipeFromAI,
     generatePantrySuggestions as generatePantrySuggestionsAI,
     generateRecipeImage } from "../utils/gemini.js";
+import { calculateRecipeNutrition, validateAndMergeNutrition } from "../utils/nutrition.js";
 import { ensureDefaultRecipesForUser } from "../utils/defaultRecipes.js";
 
 // generate pantry suggestions using AI
@@ -19,14 +20,15 @@ export const generatePantrySuggestions = async (req, res, next) => {
         } = req.body;
 
         let finalIngredients = [...ingredients];
+        let pantryItems = [];
 
         if (usePantryIngredients) {
-            const pantryItems = await PantryItem.findByUserId(req.user.id);
+            pantryItems = await PantryItem.findByUserId(req.user.id);
             const pantryIngredientNames = pantryItems.map(item => item.name);
             finalIngredients = [...new Set([...finalIngredients, ...pantryIngredientNames])];
         }
 
-        if (finalIngredients.length === 0) {
+        if (finalIngredients.length === 0 && pantryItems.length === 0) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Please provide at least one ingredient' 
@@ -34,12 +36,30 @@ export const generatePantrySuggestions = async (req, res, next) => {
         }
         
         const recipe = await generateRecipeFromAI({
-            ingredients: finalIngredients, 
+            ingredients: finalIngredients,
+            pantryItems: pantryItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit,
+                category: item.category
+            })),
             dietaryRestrictions, 
             cuisine: cuisineType, 
             servings, 
             cookingTime
         });
+
+        // Calculate nutrition from ingredients
+        const nutritionResult = calculateRecipeNutrition(
+            recipe.ingredients || [],
+            recipe.servings || servings
+        );
+
+        // Merge calculated nutrition with AI estimate
+        const finalNutrition = validateAndMergeNutrition(
+            nutritionResult,
+            recipe.nutrition || {}
+        );
 
         // Generate image in parallel (non-blocking fallback)
         const imageUrl = await generateRecipeImage(
@@ -51,7 +71,13 @@ export const generatePantrySuggestions = async (req, res, next) => {
         res.json({
             success: true,
             message: 'Recipe generated successfully',
-            data: { recipe: { ...recipe, image_url: imageUrl } }
+            data: { 
+                recipe: { 
+                    ...recipe, 
+                    nutrition: finalNutrition,
+                    image_url: imageUrl 
+                } 
+            }
         });
 
     } catch (error) {
@@ -244,6 +270,93 @@ export const getRecipeStats = async (req, res, next) => {
             data: { stats }
         });
     } catch (error) {
+        next(error);
+    }
+};
+
+// regenerate recipe with variations
+export const regenerateRecipe = async (req, res, next) => {
+    try {
+        const {
+            ingredients = [],
+            pantryItems = [],
+            dietaryRestrictions = [],
+            cuisineType = 'any',
+            servings = 4,
+            cookingTime = 'medium',
+            previousRecipe = null,
+            attemptNumber = 1
+        } = req.body;
+
+        if (ingredients.length === 0 && pantryItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide at least one ingredient'
+            });
+        }
+
+        // Fetch fresh pantry items if needed
+        let fullPantryItems = pantryItems;
+        if (req.body.usePantryIngredients && pantryItems.length === 0) {
+            const dbPantryItems = await PantryItem.findByUserId(req.user.id);
+            fullPantryItems = dbPantryItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit,
+                category: item.category
+            }));
+        }
+
+        const recipe = await generateRecipeFromAI({
+            ingredients,
+            pantryItems: fullPantryItems,
+            dietaryRestrictions,
+            cuisine: cuisineType,
+            servings,
+            cookingTime,
+            regenerate: true,
+            previousRecipe,
+            attemptNumber
+        });
+
+        // Calculate nutrition from ingredients
+        const nutritionResult = calculateRecipeNutrition(
+            recipe.ingredients || [],
+            recipe.servings || servings
+        );
+
+        // Merge calculated nutrition with AI estimate
+        const finalNutrition = validateAndMergeNutrition(
+            nutritionResult,
+            recipe.nutrition || {}
+        );
+
+        const imageUrl = await generateRecipeImage(
+            recipe.name,
+            recipe.description,
+            recipe.cuisineType || cuisineType
+        );
+
+        res.json({
+            success: true,
+            message: 'Recipe regenerated successfully',
+            data: { 
+                recipe: { 
+                    ...recipe, 
+                    nutrition: finalNutrition,
+                    image_url: imageUrl 
+                }, 
+                attemptNumber 
+            }
+        });
+
+    } catch (error) {
+        if (error?.status === 429 || /quota|429/i.test(error?.message || '')) {
+            return res.status(429).json({
+                success: false,
+                message: 'AI quota exhausted — please try again in about 15 minutes.'
+            });
+        }
         next(error);
     }
 };

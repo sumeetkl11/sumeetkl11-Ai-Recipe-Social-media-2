@@ -10,6 +10,7 @@ router.use(authMiddleware);
 
 // Ai generated recipes
 router.post('/generate', aiLimiter, recipeController.generatePantrySuggestions);
+router.post('/regenerate', aiLimiter, recipeController.regenerateRecipe);
 router.post('/suggestion', aiLimiter, recipeController.getSmartPantrySuggestions);
 
 router.get('/', recipeController.getAllRecipes);

@@ -48,6 +48,8 @@ const RecipeGenerator = () => {
   const [saving, setSaving] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+  const [regenerateAttempt, setRegenerateAttempt] = useState(1);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   useEffect(() => {
     if (usePantry && pantryItemsList.length === 0) {
@@ -129,6 +131,7 @@ const RecipeGenerator = () => {
     setGenerating(true);
     setGeneratedRecipe(null);
     setImageLoaded(false);
+    setRegenerateAttempt(1);
 
     try {
       const response = await api.post('/recipes/generate', {
@@ -146,6 +149,45 @@ const RecipeGenerator = () => {
       toast.error(error.response?.data.message || 'Failed to generate recipe. Please try again.');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (regenerateAttempt >= 5) {
+      toast.error('Maximum regeneration attempts (5) reached. Please start a new generation.');
+      return;
+    }
+
+    setIsRegenerating(true);
+    setImageLoaded(false);
+
+    try {
+      const response = await api.post('/recipes/regenerate', {
+        ingredients,
+        usePantryIngredients: usePantry,
+        pantryItems: usePantry ? pantryItemsList.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit
+        })) : [],
+        dietaryRestrictions,
+        cuisineType: cuisineType === 'Any' ? 'any' : cuisineType,
+        servings,
+        cookingTime,
+        previousRecipe: generatedRecipe ? {
+          name: generatedRecipe.name,
+          ingredients: generatedRecipe.ingredients
+        } : null,
+        attemptNumber: regenerateAttempt + 1
+      });
+
+      setGeneratedRecipe(response.data.data.recipe);
+      setRegenerateAttempt(regenerateAttempt + 1);
+      toast.success(`Recipe regenerated (attempt ${regenerateAttempt + 1}/5)!`);
+    } catch (error) {
+      toast.error(error.response?.data.message || 'Failed to regenerate recipe. Please try again.');
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -513,9 +555,16 @@ const RecipeGenerator = () => {
 
                     {generatedRecipe.nutrition && (
                       <div>
-                        <h3 className="mb-3 font-display text-2xl text-slate-950">Nutrition</h3>
+                        <div className="mb-3 flex items-center justify-between">
+                          <h3 className="font-display text-2xl text-slate-950">Nutrition</h3>
+                          {generatedRecipe.nutrition.method && (
+                            <span className="rounded-full border border-amber-300/30 bg-amber-300/12 px-3 py-1 text-xs font-medium text-amber-700">
+                              {generatedRecipe.nutrition.method === 'calculated' ? 'Calculated' : generatedRecipe.nutrition.method === 'hybrid' ? 'Hybrid' : 'AI Estimated'}
+                            </span>
+                          )}
+                        </div>
                         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                          {Object.entries(generatedRecipe.nutrition).map(([key, value]) => (
+                          {Object.entries(generatedRecipe.nutrition).filter(([key]) => key !== 'method' && key !== 'confidence').map(([key, value]) => (
                             <div key={key} className="rounded-2xl border border-white/8 bg-white/80 p-3 text-center">
                               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{key}</p>
                               <p className="mt-1 text-lg font-semibold text-slate-950">{value}</p>
@@ -548,12 +597,16 @@ const RecipeGenerator = () => {
                       View All Saved
                     </Link>
                     <button
-                      onClick={handleGenerate}
-                      disabled={generating}
+                      onClick={handleRegenerate}
+                      disabled={generating || isRegenerating || regenerateAttempt >= 5}
                       className="secondary-button justify-center text-amber-700 hover:text-amber-800"
                     >
-                      <Sparkles className="h-4 w-4" />
-                      Regenerate
+                      {isRegenerating ? (
+                        <div className="h-4 w-4 rounded-full border-2 border-amber-700/60 border-t-transparent animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      {isRegenerating ? 'Regenerating...' : `Regenerate (${regenerateAttempt}/5)`}
                     </button>
                   </div>
                 </div>
