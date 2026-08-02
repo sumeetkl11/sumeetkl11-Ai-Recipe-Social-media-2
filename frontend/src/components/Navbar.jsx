@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 
@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -105,13 +106,19 @@ export default function Navbar() {
           )}
         </NavLink>
 
-        <NavLink to="/pantry" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
-          {({isActive}) => (
-            <>
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>inventory_2</span>
-              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Pantry</span>
-            </>
-          )}
+        <NavLink to="/pantry" className={({isActive}) => {
+          const active = isActive || location.pathname === '/marketplace';
+          return `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${active ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`;
+        }}>
+          {({isActive}) => {
+            const active = isActive || location.pathname === '/marketplace';
+            return (
+              <>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}>inventory_2</span>
+                <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Pantry</span>
+              </>
+            );
+          }}
         </NavLink>
 
         <NavLink to="/social" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>

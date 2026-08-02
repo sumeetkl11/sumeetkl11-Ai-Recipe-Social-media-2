@@ -49,25 +49,19 @@ export default function MarketplaceHub() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col pt-14">
       <Navbar />
       
       {/* Marketplace Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center gap-6">
-          <div className="flex items-center gap-2 text-slate-700 hover:text-[#d70f64] cursor-pointer font-medium transition-colors">
-            <MapPin className="w-5 h-5" />
-            <span>Deliver to: Home (123 Main St)</span>
-            <ChevronRight className="w-4 h-4" />
-          </div>
-          
-          <div className="flex-1 max-w-2xl relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <div className="bg-white border-b border-slate-200 sticky top-14 z-40">
+        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-center">
+          <div className="w-full max-w-3xl relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-slate-400" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl bg-slate-100/50 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-[#d70f64]/20 focus:border-[#d70f64] transition-colors"
+              className="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-100/50 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-[#d70f64]/20 focus:border-[#d70f64] transition-colors shadow-sm text-sm"
               placeholder="Search for groceries, ingredients..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -80,7 +74,7 @@ export default function MarketplaceHub() {
       <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 relative items-start">
         
         {/* Left Sidebar - Categories */}
-        <div className="hidden md:block col-span-2 space-y-1 sticky top-[120px]">
+        <div className="hidden md:block col-span-2 space-y-1 sticky top-[140px]">
           <h3 className="font-bold text-slate-900 px-3 mb-4 uppercase tracking-wider text-sm">Categories</h3>
           {MARKETPLACE_CATEGORIES.map(cat => (
             <button
@@ -182,7 +176,7 @@ export default function MarketplaceHub() {
         </div>
 
         {/* Right Sidebar - Cart */}
-        <div className="hidden lg:block col-span-3 sticky top-[120px]">
+        <div className="hidden lg:block col-span-3 sticky top-[140px]">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-140px)]">
             <div className="p-4 border-b border-slate-100 bg-slate-50/50">
               <h3 className="font-bold text-slate-900 flex items-center gap-2">
