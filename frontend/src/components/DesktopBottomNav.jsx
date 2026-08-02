@@ -23,8 +23,7 @@ export default function DesktopBottomNav() {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden md:flex" ref={containerRef}>
       <nav 
-        className="glass-panel rounded-full p-2 flex items-center gap-1 shadow-2xl border border-white/20"
-        style={{ backdropFilter: 'blur(30px)', background: 'rgba(255,255,255,0.75)' }}
+        className="rounded-full p-2 flex items-center gap-1 shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -46,7 +45,7 @@ export default function DesktopBottomNav() {
                   relative px-6 py-2.5 rounded-full flex items-center gap-2.5 text-sm font-semibold transition-all duration-300
                   ${isActive 
                     ? 'text-white shadow-lg' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                    : 'hover:text-gray-900 hover:bg-white/20'
                   }
                 `}
               >

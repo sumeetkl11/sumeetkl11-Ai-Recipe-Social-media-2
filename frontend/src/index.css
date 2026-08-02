@@ -95,6 +95,7 @@
     border-radius: 22px;
     box-shadow: 0 16px 40px rgba(180, 110, 40, 0.10);
   }
+
   .cc-glass-pill {
     backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.5);

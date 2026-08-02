@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { getIngredientImage, getCategoryEmoji } from '../utils/ingredientImageHelper';
+import { getIngredientImage } from '../utils/ingredientImageHelper';
 import { CATEGORY_FALLBACKS } from '../data/ingredientImages';
 
 const CATEGORIES = ['Vegetables', 'Fruits', 'Dairy', 'Proteins', 'Grains', 'Spices', 'Other'];
@@ -28,9 +28,6 @@ const Pantry = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [simpleView, setSimpleView] = useState(() => {
-    return localStorage.getItem('pantryViewMode') === 'simple';
-  });
 
   const fetchPantryItems = useCallback(async () => {
     try {
@@ -75,18 +72,6 @@ const Pantry = () => {
     setFilteredItems(result);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-
-    try {
-      await api.delete(`/pantry/${id}`);
-      setItems(items.filter(item => item.id !== id)); 
-      toast.success('Item deleted');
-    } catch (error) {
-      toast.error('Error deleting item');
-    }
-  };
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -121,18 +106,6 @@ const Pantry = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Your Pantry</h1>
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => {
-                    const newMode = !simpleView;
-                    setSimpleView(newMode);
-                    localStorage.setItem('pantryViewMode', newMode ? 'simple' : 'photo');
-                  }}
-                  className="cc-glass-pill px-4 py-2 rounded-full font-label-md flex items-center gap-2 hover:bg-white/60 transition-all whitespace-nowrap border border-white/50"
-                  title={simpleView ? 'Switch to Photo View' : 'Switch to Simple View'}
-                >
-                  <span className="text-lg">{simpleView ? '📷' : '📋'}</span>
-                  {simpleView ? 'Photos' : 'Simple'}
-                </button>
                 <div className="relative flex-grow min-w-[200px]">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
                   <input 
@@ -143,14 +116,6 @@ const Pantry = () => {
                     type="text"
                   />
                 </div>
-                <button 
-                  onClick={() => navigate('/marketplace')}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-5 py-2 rounded-full font-label-md flex items-center gap-2 shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-                  title="Browse Marketplace"
-                >
-                  <span className="material-symbols-outlined text-[20px]">storefront</span>
-                  Marketplace
-                </button>
                 <button 
                   onClick={() => setShowAddModal(true)}
                   className="bg-primary text-white px-4 md:px-6 py-2 rounded-full font-label-md flex items-center gap-2 shadow-[0_4px_12px_rgba(245,158,11,0.3)] hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
@@ -193,9 +158,7 @@ const Pantry = () => {
                   <PantryItemCard 
                     key={item.id} 
                     item={item} 
-                    onEdit={() => setEditingItem(item)} 
-                    onDelete={() => handleDelete(item.id)}
-                    simpleView={simpleView}
+                    onEdit={() => setEditingItem(item)}
                   />
                 ))}
               </div>
@@ -293,7 +256,7 @@ const Pantry = () => {
   );
 };
 
-const PantryItemCard = ({ item, onEdit, onDelete, simpleView }) => {
+const PantryItemCard = ({ item, onEdit }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -320,29 +283,28 @@ const PantryItemCard = ({ item, onEdit, onDelete, simpleView }) => {
   return (
     <div className="cc-glass-pill rounded-2xl p-4 flex flex-col gap-4 hover:translate-y-[-4px] transition-transform border border-white/50 group relative">
       <div className="h-32 w-full rounded-xl overflow-hidden relative bg-white/40 flex items-center justify-center">
-        {/* Real ingredient photo or simple emoji */}
-        {simpleView ? (
-          <span className="text-6xl">{getCategoryEmoji(item.category)}</span>
-        ) : (
-          <img 
-            src={getIngredientImage(item.name, item.category)} 
-            alt={item.name}
-            loading="lazy"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = CATEGORY_FALLBACKS[item.category] || CATEGORY_FALLBACKS.Other;
-            }}
-          />
-        )}
+        {/* Real ingredient photo */}
+        <img 
+          src={getIngredientImage(item.name, item.category)} 
+          alt={item.name}
+          loading="lazy"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = CATEGORY_FALLBACKS[item.category] || CATEGORY_FALLBACKS.Other;
+          }}
+        />
         {statusBadge}
         {/* Action overlay on hover */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-          <button onClick={onEdit} className="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center hover:scale-110 transition-transform">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-10">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }} 
+            className="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+          >
             <span className="material-symbols-outlined text-[18px]">edit</span>
-          </button>
-          <button onClick={onDelete} className="w-8 h-8 rounded-full bg-white text-error flex items-center justify-center hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-[18px]">delete</span>
           </button>
         </div>
       </div>
@@ -352,7 +314,6 @@ const PantryItemCard = ({ item, onEdit, onDelete, simpleView }) => {
           <h3 className="font-headline-md text-label-md text-on-surface truncate pr-2" title={item.name}>{item.name}</h3>
           <p className="text-label-sm text-outline">{item.category}</p>
         </div>
-        {simpleView && <span className="text-2xl shrink-0">{getCategoryEmoji(item.category)}</span>}
       </div>
       
       <div className="flex justify-between items-center mt-auto">

@@ -1,53 +1,11 @@
 import { useState, useMemo } from 'react';
 import Navbar from '../../components/Navbar';
 import { ShoppingBag, Search, Plus, Minus, MapPin, ChevronRight, X } from 'lucide-react';
+import { getIngredientImage } from '../../utils/ingredientImageHelper';
+import { CATEGORY_FALLBACKS } from '../../data/ingredientImages';
+import { MARKETPLACE_PRODUCTS, MARKETPLACE_CATEGORIES } from '../../data/marketplaceProducts';
 
-import tomatoImg from '../../assets/images/tomato.jpg';
-import onionImg from '../../assets/images/onion.jpg';
-import cucumberImg from '../../assets/images/cucumber.jpg';
-import carrotImg from '../../assets/images/carrot.jpg';
-import potatoImg from '../../assets/images/potato.jpg';
-import broccoliImg from '../../assets/images/broccoli.jpg';
-import bellPepperImg from '../../assets/images/bell_pepper.jpg';
-import garlicImg from '../../assets/images/garlic.jpg';
-import spinachImg from '../../assets/images/spinach.jpg';
-import cabbageImg from '../../assets/images/cabbage.jpg';
-import eggplantImg from '../../assets/images/eggplant.jpg';
-import greenChiliImg from '../../assets/images/green_chili.jpg';
-import corianderImg from '../../assets/images/coriander.jpg';
-import lemonImg from '../../assets/images/lemon.jpg';
-import peasImg from '../../assets/images/peas.jpg';
-import mushroomImg from '../../assets/images/mushroom.jpg';
-import cornImg from '../../assets/images/corn.jpg';
 
-const STATIC_PRODUCTS = [
-  { id: 1, name: "Tomato", price: 80, originalPrice: 100, discount: "20%", expiryDate: "2024-06-20", category: "Vegetables", image: tomatoImg },
-  { id: 2, name: "Onion", price: 50, originalPrice: 50, discount: null, expiryDate: "2024-07-10", category: "Vegetables", image: onionImg },
-  { id: 3, name: "Cucumber", price: 60, originalPrice: 75, discount: "20%", expiryDate: "2024-06-18", category: "Vegetables", image: cucumberImg },
-  { id: 4, name: "Carrot", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: carrotImg },
-  { id: 5, name: "Potato", price: 40, originalPrice: 50, discount: "20%", expiryDate: "2024-07-15", category: "Vegetables", image: potatoImg },
-  { id: 6, name: "Broccoli", price: 120, originalPrice: 150, discount: "20%", expiryDate: "2024-06-19", category: "Vegetables", image: broccoliImg },
-  { id: 7, name: "Bell Pepper (Red)", price: 100, originalPrice: 120, discount: "15%", expiryDate: "2024-06-22", category: "Vegetables", image: bellPepperImg },
-  { id: 8, name: "Garlic", price: 150, originalPrice: 150, discount: null, expiryDate: "2024-07-20", category: "Spices", image: garlicImg },
-  { id: 9, name: "Spinach", price: 90, originalPrice: 100, discount: "10%", expiryDate: "2024-06-17", category: "Vegetables", image: spinachImg },
-  { id: 10, name: "Cabbage", price: 55, originalPrice: 55, discount: null, expiryDate: "2024-06-28", category: "Vegetables", image: cabbageImg },
-  { id: 11, name: "Eggplant", price: 85, originalPrice: 100, discount: "15%", expiryDate: "2024-06-21", category: "Vegetables", image: eggplantImg },
-  { id: 13, name: "Green Chili", price: 120, originalPrice: 120, discount: null, expiryDate: "2024-06-19", category: "Spices", image: greenChiliImg },
-  { id: 14, name: "Coriander", price: 60, originalPrice: 80, discount: "25%", expiryDate: "2024-06-16", category: "Herbs", image: corianderImg },
-  { id: 16, name: "Lemon", price: 70, originalPrice: 70, discount: null, expiryDate: "2024-06-25", category: "Vegetables", image: lemonImg },
-  { id: 18, name: "Peas", price: 95, originalPrice: 110, discount: "13%", expiryDate: "2024-06-20", category: "Vegetables", image: peasImg },
-  { id: 27, name: "Mushroom", price: 180, originalPrice: 200, discount: "10%", expiryDate: "2024-06-19", category: "Vegetables", image: mushroomImg },
-  { id: 28, name: "Corn", price: 75, originalPrice: 75, discount: null, expiryDate: "2024-06-23", category: "Vegetables", image: cornImg }
-];
-
-const CATEGORIES = [
-  { id: 'all', name: 'All Items', count: STATIC_PRODUCTS.length },
-  { id: 'vegetables', name: 'Vegetables', count: STATIC_PRODUCTS.filter(p => p.category === 'Vegetables').length },
-  { id: 'spices', name: 'Spices', count: STATIC_PRODUCTS.filter(p => p.category === 'Spices').length },
-  { id: 'herbs', name: 'Herbs', count: STATIC_PRODUCTS.filter(p => p.category === 'Herbs').length },
-  { id: 'dairy', name: 'Dairy', count: 0 },
-  { id: 'snacks', name: 'Snacks', count: 0 },
-];
 
 export default function MarketplaceHub() {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -56,9 +14,9 @@ export default function MarketplaceHub() {
 
   // Derived state
   const filteredProducts = useMemo(() => {
-    return STATIC_PRODUCTS.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === 'all' || p.category.toLowerCase() === activeCategory;
+    return MARKETPLACE_PRODUCTS.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase().trim());
+      const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
   }, [activeCategory, searchQuery]);
@@ -124,7 +82,7 @@ export default function MarketplaceHub() {
         {/* Left Sidebar - Categories */}
         <div className="hidden md:block col-span-2 space-y-1 sticky top-[120px]">
           <h3 className="font-bold text-slate-900 px-3 mb-4 uppercase tracking-wider text-sm">Categories</h3>
-          {CATEGORIES.map(cat => (
+          {MARKETPLACE_CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
@@ -148,7 +106,7 @@ export default function MarketplaceHub() {
         <div className="col-span-1 md:col-span-10 lg:col-span-7 pb-24 lg:pb-0">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-slate-900">
-              {activeCategory === 'all' ? 'Popular Items' : CATEGORIES.find(c => c.id === activeCategory)?.name}
+              {activeCategory === 'all' ? 'Popular Items' : MARKETPLACE_CATEGORIES.find(c => c.id === activeCategory)?.name}
             </h2>
           </div>
 
@@ -172,9 +130,14 @@ export default function MarketplaceHub() {
                   {/* Product Image */}
                   <div className="aspect-square bg-slate-50 rounded-xl mb-3 overflow-hidden flex items-center justify-center">
                     <img 
-                      src={product.image} 
-                      alt={product.name} 
+                      src={getIngredientImage(product.name, product.category)} 
+                      alt={product.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CATEGORY_FALLBACKS[product.category] || CATEGORY_FALLBACKS.Other;
+                      }}
                     />
                   </div>
                   
@@ -241,8 +204,16 @@ export default function MarketplaceHub() {
                 <div className="space-y-4">
                   {cartItems.map(item => (
                     <div key={item.id} className="flex gap-3 items-start">
-                      <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-2xl shrink-0">
-                        {item.image}
+                      <div className="w-12 h-12 bg-slate-50 rounded-lg overflow-hidden shrink-0">
+                        <img 
+                          src={getIngredientImage(item.name, item.category)} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = CATEGORY_FALLBACKS[item.category] || CATEGORY_FALLBACKS.Other;
+                          }}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium text-slate-900 truncate">{item.name}</h4>
