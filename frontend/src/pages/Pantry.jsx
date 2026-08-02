@@ -127,6 +127,14 @@ const Pantry = () => {
                   />
                 </div>
                 <button 
+                  onClick={() => navigate('/marketplace')}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-5 py-2 rounded-full font-label-md flex items-center gap-2 shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+                  title="Browse Marketplace"
+                >
+                  <span className="material-symbols-outlined text-[20px]">storefront</span>
+                  Marketplace
+                </button>
+                <button 
                   onClick={() => setShowAddModal(true)}
                   className="bg-primary text-white px-4 md:px-6 py-2 rounded-full font-label-md flex items-center gap-2 shadow-[0_4px_12px_rgba(245,158,11,0.3)] hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                 >
@@ -226,14 +234,23 @@ const Pantry = () => {
                 </div>
               )}
 
-              {/* CTA */}
-              <button 
-                onClick={() => navigate('/generate', { state: { usePantry: true } })}
-                className="w-full py-4 rounded-2xl border-2 border-primary/20 text-primary font-bold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 mt-4"
-              >
-                <span className="material-symbols-outlined">auto_awesome</span>
-                Generate Meal Plan
-              </button>
+              {/* CTA Buttons */}
+              <div className="space-y-3 mt-4">
+                <button 
+                  onClick={() => navigate('/generate', { state: { usePantry: true } })}
+                  className="w-full py-3.5 rounded-2xl border-2 border-primary/20 text-primary font-bold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">auto_awesome</span>
+                  Generate Meal Plan
+                </button>
+                <button 
+                  onClick={() => navigate('/marketplace')}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-95"
+                >
+                  <span className="material-symbols-outlined">storefront</span>
+                  Buy / Sell on Marketplace
+                </button>
+              </div>
             </div>
           </div>
         </aside>

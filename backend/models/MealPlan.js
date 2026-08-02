@@ -8,17 +8,28 @@ class MealPlan {
 
         try {
             const result = await pool.query(
-                `INSERT INTO meal_plans (user_id, recipe_id, meal_date, meal_type, meal_data) 
-                VALUES ($1, $2, $3::date, $4, $3::date) 
-                RETURNING *`,
+                `WITH new_meal AS (
+                    INSERT INTO meal_plans (user_id, recipe_id, meal_date, meal_type, meal_data) 
+                    VALUES ($1, $2, $3::date, $4, $3::date) 
+                    RETURNING *
+                )
+                SELECT mp.id, mp.user_id, mp.recipe_id, mp.meal_date::text as meal_date, 
+                       mp.meal_type, mp.created_at, mp.updated_at, 
+                       r.name as recipe_name, r.image_url, r.prep_time, r.cook_time 
+                FROM new_meal mp
+                JOIN recipes r ON mp.recipe_id = r.id`,
                 [userId, recipeId, data, meal_type]
             );
             return result.rows[0];
         } catch (error) {
             if (error.code === '23505') {
                 const existing = await pool.query(
-                    `SELECT * FROM meal_plans 
-                     WHERE user_id = $1 AND recipe_id = $2 AND meal_type = $3 AND meal_date = $4::date`,
+                    `SELECT mp.id, mp.user_id, mp.recipe_id, mp.meal_date::text as meal_date, 
+                            mp.meal_type, mp.created_at, mp.updated_at, 
+                            r.name as recipe_name, r.image_url, r.prep_time, r.cook_time 
+                     FROM meal_plans mp
+                     JOIN recipes r ON mp.recipe_id = r.id
+                     WHERE mp.user_id = $1 AND mp.recipe_id = $2 AND mp.meal_type = $3 AND mp.meal_date = $4::date`,
                     [userId, recipeId, meal_type, data]
                 );
                 if (existing.rows[0]) {

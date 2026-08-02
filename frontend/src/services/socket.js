@@ -51,7 +51,10 @@ export function initializeSocket() {
 
   // Create new socket instance
   console.log('🔌 Creating new Socket.io connection');
+  const token = localStorage.getItem('token');
   socketInstance = io(SOCKET_URL, {
+    auth: { token },
+    query: { token },
     withCredentials: true, // Send cookies with requests
     reconnection: true,
     reconnectionDelay: 1000,

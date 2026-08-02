@@ -11,7 +11,17 @@ export function initializeSocialSocket(io) {
   // Middleware to authenticate socket connections (optional for unauthenticated users)
   io.use((socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.query.token;
+      let token = socket.handshake.auth?.token || socket.handshake.query?.token;
+
+      if (!token && socket.handshake.headers?.cookie) {
+        const cookiePair = socket.handshake.headers.cookie
+          .split(';')
+          .map((c) => c.trim().split('='))
+          .find(([key]) => key === 'token');
+        if (cookiePair && cookiePair[1]) {
+          token = cookiePair[1];
+        }
+      }
 
       if (token) {
         try {

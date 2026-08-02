@@ -58,6 +58,10 @@ export default function Navbar() {
                   <span className="material-symbols-outlined text-[20px]">person</span>
                   Profile
                 </Link>
+                <Link to="/marketplace" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                  <span className="material-symbols-outlined text-[20px]">storefront</span>
+                  Marketplace
+                </Link>
                 <Link to="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors" onClick={() => setIsDropdownOpen(false)}>
                   <span className="material-symbols-outlined text-[20px]">settings</span>
                   Settings

@@ -3,7 +3,7 @@ import { Calendar as CalendarIcon, Plus, X, ChefHat } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { getSocket } from '../services/socket';
+import { getSocket, initializeSocket } from '../services/socket';
 
 // Native date helpers (replaces date-fns)
 const startOfWeek = (d) => { const s = new Date(d); s.setDate(s.getDate() - s.getDay()); s.setHours(0,0,0,0); return s; };
@@ -59,17 +59,29 @@ const MealPlanner = () => {
             }
         };
 
-        const socket = getSocket();
-        if (socket) {
-            socket.on('mealplan:update', handleMealPlanUpdate);
-            // Re-register after reconnect
-            socket.on('connect', fetchMealPlan);
+        let activeSocket = getSocket();
+        let cleanedUp = false;
+
+        const setupSocket = (sock) => {
+            if (!sock || cleanedUp) return;
+            sock.on('mealplan:update', handleMealPlanUpdate);
+            sock.on('connect', fetchMealPlan);
+        };
+
+        if (activeSocket) {
+            setupSocket(activeSocket);
+        } else {
+            initializeSocket().then((sock) => {
+                activeSocket = sock;
+                setupSocket(sock);
+            }).catch(() => {});
         }
 
         return () => {
-            if (socket) {
-                socket.off('mealplan:update', handleMealPlanUpdate);
-                socket.off('connect', fetchMealPlan);
+            cleanedUp = true;
+            if (activeSocket) {
+                activeSocket.off('mealplan:update', handleMealPlanUpdate);
+                activeSocket.off('connect', fetchMealPlan);
             }
         };
     }, [weekStart]);
@@ -328,14 +340,14 @@ const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
 
         setLoading(true);
 
-        try{
-            await api.post('/meal-plans', {
+        try {
+            const response = await api.post('/meal-plans', {
                 recipeId: selectedRecipe,
                 planned_date: date,
                 meal_type: mealType
             });
             toast.success('Meal added to plan');
-            onSuccess();
+            onSuccess(response.data.data?.mealPlan);
         } catch (error) {
             const message = error.response?.data?.error?.message || error.response?.data?.message || 'Failed to add meal';
             toast.error(message);
