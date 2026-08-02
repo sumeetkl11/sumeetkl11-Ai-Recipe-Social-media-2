@@ -59,9 +59,9 @@ const allowedOrigins = new Set([
 ]);
 
 function isAllowedOrigin(origin) {
-  // Reject null origins for security
+  // Allow requests with no origin (like mobile apps, curl, or same-origin)
   if (!origin) {
-    return false;
+    return true;
   }
 
   return allowedOrigins.has(origin);

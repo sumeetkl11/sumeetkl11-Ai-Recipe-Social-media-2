@@ -73,10 +73,19 @@ export default function SocialFeed() {
   useEffect(() => {
     if (posts.length > 0) {
       try {
-        // Only cache the first page (up to 10 items) to prevent QuotaExceededError with base64 images
-        sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(posts.slice(0, 10)));
+        // Strip large base64 image data before caching to prevent QuotaExceededError
+        const sanitized = posts.slice(0, 10).map((post) => {
+          if (post?.image_url && typeof post.image_url === 'string' && post.image_url.startsWith('data:') && post.image_url.length > 2000) {
+            const { image_url, ...rest } = post;
+            return rest;
+          }
+          return post;
+        });
+        sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(sanitized));
       } catch (err) {
-        console.warn('Could not save feed to sessionStorage (quota exceeded).');
+        try {
+          sessionStorage.removeItem(FEED_CACHE_KEY);
+        } catch (_) {}
       }
     }
   }, [posts]);

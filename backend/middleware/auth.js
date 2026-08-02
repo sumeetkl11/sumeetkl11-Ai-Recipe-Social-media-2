@@ -22,6 +22,14 @@ const authMiddleware = async (req, res, next) =>{
         // verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        // If the token is from an old session and missing the ID, reject it.
+        if (!decoded.id) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token payload, please log in again."
+            });
+        }
+
         // ADD user info to request
         req.user ={
             id: decoded.id,

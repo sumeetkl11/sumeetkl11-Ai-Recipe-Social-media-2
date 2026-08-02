@@ -6,15 +6,15 @@ class ShoppingList {
         const client = await pool.connect();
         
         try {
-            await pool.query('BEGIN');
+            await client.query('BEGIN');
 
             // Clear existing meal plan
-            await pool.query(
+            await client.query(
                 'DELETE FROM shopping_list_items WHERE user_id = $1 AND from_meal_plan = true',
                 [userId]);
 
             // get all ingredients from meal plan
-            const ingredientsResult = await pool.query(
+            const ingredientsResult = await client.query(
                 `SELECT ri.ingredient_name, ri.unit, SUM(ri.quantity) as total_quantity 
                  FROM meal_plans mp 
                  JOIN recipe_ingredients ri ON mp.recipe_id = ri.recipe_id 
@@ -27,7 +27,7 @@ class ShoppingList {
             const ingredients = ingredientsResult.rows;
             
             // Get pantry items to subtract
-            const pantryResult = await pool.query(
+            const pantryResult = await client.query(
                 `SELECT name, quantity, unit 
                  FROM pantry_items 
                  WHERE user_id = $1`,
@@ -46,7 +46,7 @@ class ShoppingList {
                 const neededQty = Math.max(0, parseFloat(ing.total_quantity) - parseFloat(pantryQty));
 
                 if (neededQty > 0) {
-                    await pool.query(
+                    await client.query(
                         `INSERT INTO shopping_list_items
                         (user_id, ingredient_name, quantity, unit, from_meal_plan, category)
                          VALUES ($1, $2, $3, $4, true, $5)`,
@@ -55,11 +55,11 @@ class ShoppingList {
                 }
             }
 
-            await pool.query('COMMIT');
+            await client.query('COMMIT');
 
             return await this.findAll(userId); 
         } catch (error) {
-            await pool.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw error;
         } finally {
             client.release();

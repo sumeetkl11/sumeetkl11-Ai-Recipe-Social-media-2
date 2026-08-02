@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { ChefHat, UtensilsCrossed, Calendar, Clock, ArrowRight, Sparkles, Flame, Soup, NotebookPen, Heart, MessageCircle, RotateCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
 
@@ -86,7 +85,6 @@ const Dashboard = () => {
     }
   }, [popularPosts.length, recentRecipes.length, upcomingMeals.length]);
 
-  // ponytail: load once on mount only — the focus-refresh hook stays disabled to respect rate limits
   useEffect(() => {
     void fetchDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,252 +92,201 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="page-bg min-h-screen">
+      <div className="bg-background text-on-surface font-body-md min-h-screen">
         <Navbar />
-        <div className="mx-auto px-4 pb-12 pt-8 sm:px-6">
-          <div className="glass-panel loading-skeleton h-56 rounded-[32px]" />
-          <div className="mt-6 grid gap-4">
-            <div className="glass-card loading-skeleton h-28 rounded-[28px]" />
-            <div className="glass-card loading-skeleton h-28 rounded-[28px]" />
-            <div className="glass-card loading-skeleton h-28 rounded-[28px]" />
+        <main className="pt-24 pb-32 px-4 md:px-10 max-w-[1200px] mx-auto animate-pulse">
+          <div className="cc-glass-panel h-96 rounded-3xl mb-12"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div className="cc-glass-panel h-64 rounded-3xl"></div>
+             <div className="cc-glass-panel h-64 rounded-3xl"></div>
+             <div className="cc-glass-panel h-64 rounded-3xl"></div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="page-bg min-h-screen">
+    <div className="bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="cc-bg-blob bg-primary w-96 h-96 -top-20 -left-20 opacity-30"></div>
+      <div className="cc-bg-blob bg-primary-container w-[500px] h-[500px] bottom-0 right-0 opacity-20"></div>
+      <div className="cc-bg-blob bg-primary/20 w-64 h-64 top-1/2 left-1/3 opacity-10"></div>
+
       <Navbar />
 
-      <div className="mx-auto px-4 pb-12 pt-8 sm:px-6">
-        <section className="grid gap-6 lg:grid-cols-[1.45fr_0.8fr]">
-          <div className="page-hero glass-panel relative overflow-hidden rounded-[32px] p-7 md:p-8">
-            <div className="absolute -right-10 top-0 h-40 w-40 rounded-full bg-orange-400/20 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-amber-200/10 blur-3xl" />
-            <div className="relative">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="eyebrow">
-                  <Sparkles className="h-4 w-4" />
-                  Daily Mise en Place
-                </div>
-                <button
-                  onClick={() => fetchDashboardData({ silent: true })}
-                  disabled={refreshing}
-                  className="glass-badge flex items-center gap-1.5 text-xs font-medium text-slate-700 transition hover:bg-white/80"
-                  title="Refresh Dashboard Data"
-                >
-                  <RotateCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
-                </button>
-              </div>
-              <h1 className="max-w-2xl font-display text-4xl leading-tight text-slate-950 md:text-6xl">
-                Build dinner plans that look and feel restaurant-ready.
-              </h1>
-              <p className="mt-4 max-w-xl text-base text-slate-600 md:text-lg">
-                Your kitchen dashboard now starts with curated recipes, richer motion, and a faster path from pantry to plated post.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/generate" className="cta-button">
-                  Generate a Recipe
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link to="/recipes" className="secondary-button">
-                  Browse My Recipes
-                </Link>
-              </div>
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <HeroMetric icon={<Flame className="h-4 w-4" />} label="Saved recipes" value={stats.totalRecipes} />
-                <HeroMetric icon={<Soup className="h-4 w-4" />} label="Pantry items" value={stats.pantryItems} />
-                <HeroMetric icon={<NotebookPen className="h-4 w-4" />} label="Meals this week" value={stats.mealsThisWeek} />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4">
-            <SpotlightCard
-              to="/pantry"
-              title="Pantry Pulse"
-              description="Track what you already have and let the generator work from real ingredients."
-              icon={<UtensilsCrossed className="h-5 w-5" />}
-            />
-            <SpotlightCard
-              to="/meal-plan"
-              title="Weekly Flow"
-              description="Turn recent ideas into a practical weeknight plan without leaving the dashboard."
-              icon={<Calendar className="h-5 w-5" />}
-            />
-            <SpotlightCard
-              to="/social"
-              title="Share the Plate"
-              description="Post finished dishes and keep your social feed tied to saved recipes."
-              icon={<ChefHat className="h-5 w-5" />}
-            />
-          </div>
-        </section>
-
-        <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="content-panel">
-            <div className="mb-5 flex items-center justify-between">
+      <main className="pt-24 pb-32 px-4 md:px-10 max-w-[1200px] mx-auto relative z-10">
+        
+        {/* Hero Section */}
+        <section className="mb-12">
+          <div className="cc-glass-panel rounded-3xl p-8 md:p-12 relative overflow-hidden">
+            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Freshly Saved</p>
-                <h2 className="mt-2 font-display text-2xl text-slate-950">Recent Recipes</h2>
-              </div>
-              <Link to="/recipes" className="panel-link">
-                View all
-              </Link>
-            </div>
-
-            {recentRecipes.length > 0 ? (
-              <div className="space-y-3">
-                {recentRecipes.map((recipe, index) => (
-                  <Link
-                    key={recipe.id}
-                    to={`/recipes/${recipe.id}`}
-                    className="recipe-list-item"
-                    style={{ animationDelay: `${index * 80}ms` }}
-                  >
-                    <div className="recipe-list-icon">
-                      <ChefHat className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-semibold text-slate-900">{recipe.name}</h3>
-                      <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                        <Clock className="h-4 w-4" />
-                        {(recipe.prep_time || 0) + (recipe.cook_time || 0)} mins total
-                      </p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                <h1 className="font-display-lg text-display-lg mb-6 leading-tight">
+                  Build dinner plans that look and feel <span style={{color: '#101828'}}>restaurant-ready</span>.
+                </h1>
+                <p className="text-on-surface-variant font-body-lg mb-8 max-w-md">
+                  Your professional culinary workspace for organizing ingredients, discovering masterpieces, and sharing the art of food.
+                </p>
+                <div className="flex gap-4">
+                  <Link to="/generate" className="bg-primary text-white font-label-md px-8 py-4 rounded-full shadow-[0_8px_24px_rgba(245,158,11,0.35)] hover:scale-105 transition-transform active:scale-95 inline-block text-center">
+                    Start Generating
                   </Link>
-                ))}
+                </div>
               </div>
-            ) : (
-              <EmptyPanel text="Your default starter recipes will appear here as soon as they load." />
-            )}
-          </div>
-
-          <div className="content-panel">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Plan Ahead</p>
-                <h2 className="mt-2 font-display text-2xl text-slate-950">Upcoming Meals</h2>
-              </div>
-              <Link to="/meal-plan" className="panel-link">
-                View calendar
-              </Link>
-            </div>
-
-            {upcomingMeals.length > 0 ? (
-              <div className="space-y-3">
-                {upcomingMeals.map((meal, index) => (
-                  <div key={meal.id} className="meal-list-item" style={{ animationDelay: `${index * 90}ms` }}>
-                    <div className="meal-list-icon">
-                      <Calendar className="h-5 w-5" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Stat Card 1 */}
+                <Link to="/recipes" className="cc-glass-pill p-6 rounded-2xl flex flex-col gap-2 hover:translate-y-[-4px] transition-transform">
+                  <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant_menu</span>
+                  <span className="font-display-lg text-3xl font-bold">{stats.totalRecipes}</span>
+                  <span className="font-label-md text-on-surface-variant uppercase tracking-wider">Saved Recipes</span>
+                </Link>
+                {/* Stat Card 2 */}
+                <Link to="/pantry" className="cc-glass-pill p-6 rounded-2xl flex flex-col gap-2 hover:translate-y-[-4px] transition-transform">
+                  <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
+                  <span className="font-display-lg text-3xl font-bold">{stats.pantryItems}</span>
+                  <span className="font-label-md text-on-surface-variant uppercase tracking-wider">Pantry Items</span>
+                </Link>
+                {/* Stat Card 3 */}
+                <Link to="/meal-plan" className="cc-glass-pill p-6 rounded-2xl flex flex-col gap-2 hover:translate-y-[-4px] transition-transform col-span-1 sm:col-span-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-1">
+                      <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_today</span>
+                      <span className="font-display-lg text-3xl font-bold">{stats.mealsThisWeek < 10 ? `0${stats.mealsThisWeek}` : stats.mealsThisWeek}</span>
+                      <span className="font-label-md text-on-surface-variant uppercase tracking-wider">Meals This Week</span>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-semibold text-slate-900">{meal.recipe_name}</h3>
-                      <p className="mt-1 text-sm text-slate-600">{meal.meal_date}</p>
+                    <div className="h-16 w-32 flex items-end gap-1 px-2">
+                      <div className="w-full bg-primary/20 rounded-t-sm h-1/2"></div>
+                      <div className="w-full bg-primary/40 rounded-t-sm h-3/4"></div>
+                      <div className="w-full bg-primary rounded-t-sm h-full"></div>
+                      <div className="w-full bg-primary/60 rounded-t-sm h-2/3"></div>
+                      <div className="w-full bg-primary/30 rounded-t-sm h-1/3"></div>
                     </div>
                   </div>
-                ))}
+                </Link>
               </div>
-            ) : (
-              <EmptyPanel text="No meals planned yet. Add one from the weekly planner." />
-            )}
-          </div>
-
-          <div className="content-panel">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Trending Social</p>
-                <h2 className="mt-2 font-display text-2xl text-slate-950">Popular Posts</h2>
-              </div>
-              <Link to="/social" className="panel-link">
-                Open feed
-              </Link>
             </div>
-
-            {popularPosts.length > 0 ? (
-              <div className="space-y-3">
-                {popularPosts.map((post, index) => (
-                  <Link
-                    key={post.id}
-                    to="/social"
-                    className="recipe-list-item"
-                    style={{ animationDelay: `${index * 80}ms` }}
-                  >
-                    <div className="recipe-list-icon">
-                      <ChefHat className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-semibold text-slate-900">{post.recipe_name || 'Recipe post'}</h3>
-                      <p className="mt-1 truncate text-sm text-slate-600">{post.caption || 'Shared from the social kitchen feed.'}</p>
-                      <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <Heart className="h-3.5 w-3.5" />
-                          {post.like_count || 0}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          {post.comment_count || 0}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyPanel text="Popular social posts will show here once the community starts interacting." />
-            )}
+            {/* Abstract visual element */}
+            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
           </div>
         </section>
-      </div>
-    </div>
-  );
-};
 
-const HeroMetric = ({ icon, label, value }) => (
-  <div className="rounded-3xl border border-white/10 bg-white/6 px-4 py-4 backdrop-blur-sm">
-    <div className="mb-3 inline-flex rounded-2xl bg-white/90 p-2 text-fuchsia-600">{icon}</div>
-    <p className="text-3xl font-semibold text-slate-950">{value}</p>
-    <p className="mt-1 text-sm text-slate-600">{label}</p>
-  </div>
-);
+        {/* Bento Grid Panels */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Recipes */}
+          <div className="cc-glass-panel p-6 rounded-3xl flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md">Recent Recipes</h2>
+              <Link to="/recipes" className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">arrow_forward</Link>
+            </div>
+            <div className="space-y-4">
+              {recentRecipes.length > 0 ? (
+                <>
+                  {/* First item is large */}
+                  <Link to={`/recipes/${recentRecipes[0].id}`} className="block group cursor-pointer">
+                    <div className="relative h-40 w-full rounded-2xl overflow-hidden mb-3 bg-white/40 flex items-center justify-center">
+                      {recentRecipes[0].image_url ? (
+                        <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={recentRecipes[0].image_url} alt={recentRecipes[0].name} />
+                      ) : (
+                        <span className="material-symbols-outlined text-5xl text-primary/30">restaurant</span>
+                      )}
+                      <div className="absolute top-3 right-3 cc-glass-pill px-3 py-1 rounded-full text-xs font-bold text-on-surface">
+                        {(recentRecipes[0].prep_time || 0) + (recentRecipes[0].cook_time || 0)} MIN
+                      </div>
+                    </div>
+                    <h3 className="font-label-md text-lg group-hover:text-primary transition-colors">{recentRecipes[0].name}</h3>
+                    <p className="text-sm text-on-surface-variant truncate">{recentRecipes[0].description || 'Fresh from your collection'}</p>
+                  </Link>
 
-const SpotlightCard = ({ to, title, description, icon }) => (
-  <Link to={to} className="glass-card group min-h-[152px] p-6">
-    <div className="mb-4 inline-flex rounded-2xl bg-white/90 p-3 text-fuchsia-600 transition group-hover:scale-110 group-hover:bg-white">
-      {icon}
-    </div>
-    <h3 className="font-display text-2xl text-slate-950">{title}</h3>
-    <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
-  </Link>
-);
+                  {/* Remaining items are small list items */}
+                  {recentRecipes.slice(1, 3).map((recipe) => (
+                    <Link key={recipe.id} to={`/recipes/${recipe.id}`} className="flex items-center gap-4 cc-glass-pill p-3 rounded-xl hover:bg-white/40 transition-colors cursor-pointer border-transparent hover:border-white/40">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/40 flex items-center justify-center">
+                        {recipe.image_url ? (
+                          <img className="w-full h-full object-cover" src={recipe.image_url} alt={recipe.name} />
+                        ) : (
+                          <span className="material-symbols-outlined text-2xl text-primary/30">restaurant</span>
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="font-label-md text-sm truncate">{recipe.name}</h4>
+                        <p className="text-xs text-on-surface-variant truncate">
+                          {(recipe.prep_time || 0) + (recipe.cook_time || 0)} mins
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                <div className="py-8 text-center text-on-surface-variant text-sm">
+                  No recipes saved yet.
+                </div>
+              )}
+            </div>
+          </div>
 
-const EmptyPanel = ({ text }) => (
-  <div className="flex min-h-[220px] items-center justify-center rounded-[28px] border border-dashed border-white/10 bg-white/50 px-8 text-center text-slate-600">
-    {text}
-  </div>
-);
+          {/* Upcoming Meals */}
+          <div className="cc-glass-panel p-6 rounded-3xl flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md">Upcoming Meals</h2>
+              <Link to="/meal-plan" className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">calendar_month</Link>
+            </div>
+            <div className="space-y-3">
+              {upcomingMeals.length > 0 ? (
+                upcomingMeals.slice(0, 3).map((meal, index) => (
+                  <div key={meal.id} className={`border-l-4 ${index === 0 ? 'border-primary pl-4 py-2 bg-primary/10' : 'border-outline-variant pl-4 py-2 cc-glass-pill'} rounded-r-xl ${index === 2 ? 'opacity-60' : ''}`}>
+                    <span className={`text-xs font-bold ${index === 0 ? 'text-primary' : 'text-on-surface-variant'} uppercase`}>{meal.meal_date}</span>
+                    <h4 className="font-label-md truncate">{meal.recipe_name}</h4>
+                    {index === 0 && (
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase font-bold">Planned</span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-on-surface-variant text-sm">
+                  No meals planned this week.
+                </div>
+              )}
+            </div>
+            <Link to="/meal-plan" className="w-full text-center py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant font-label-md hover:bg-white/20 transition-colors mt-auto">
+              + Plan New Meal
+            </Link>
+          </div>
 
-const StatCard = ({ icon, label, value, accent }) => {
-  const accentClasses = {
-    amber: 'from-amber-300/30 to-orange-400/10 text-amber-100',
-    sky: 'from-sky-300/30 to-cyan-400/10 text-sky-100',
-    rose: 'from-rose-300/30 to-pink-400/10 text-rose-100'
-  };
-
-  return (
-    <div className="glass-card p-6">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br ${accentClasses[accent]}`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-slate-500">{label}</p>
-          <p className="mt-1 text-3xl font-semibold text-slate-950">{value}</p>
-        </div>
-      </div>
+          {/* Social Feed / Popular Posts */}
+          <div className="cc-glass-panel p-6 rounded-3xl flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md">Social Feed</h2>
+              <Link to="/social" className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">groups</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {popularPosts.length > 0 ? (
+                popularPosts.map((post) => (
+                  <Link key={post.id} to={`/social`} className="relative aspect-square rounded-2xl overflow-hidden group cursor-pointer bg-white/40 flex items-center justify-center">
+                    {post.image_url ? (
+                      <img className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" src={post.image_url} alt={post.recipe_name || 'Post'} />
+                    ) : (
+                      <span className="material-symbols-outlined text-4xl text-primary/30">image</span>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                      <span className="text-white text-xs font-medium flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span> 
+                        {post.like_count || 0}
+                      </span>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-2 py-8 text-center text-on-surface-variant text-sm">
+                  No social posts yet.
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 };

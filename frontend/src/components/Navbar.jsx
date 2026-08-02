@@ -1,42 +1,8 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  Calendar,
-  ChefHat,
-  ChevronDown,
-  Heart,
-  Home,
-  LogOut,
-  MessageCircle,
-  Settings,
-  ShoppingBag,
-  ShoppingCart,
-  User,
-  UtensilsCrossed,
-  WandSparkles
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import NotificationBadge from './NotificationBadge';
-import UserAvatar from './UserAvatar';
+import { useState, useRef, useEffect } from 'react';
 
-const desktopNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: Home },
-  { to: '/pantry', label: 'Pantry', icon: UtensilsCrossed },
-  { to: '/generate', label: 'Generate', icon: WandSparkles },
-  { to: '/recipes', label: 'Recipes', icon: ChefHat },
-  { to: '/meal-plan', label: 'Meal Plan', icon: Calendar },
-  { to: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-  { to: '/social', label: 'Social', icon: Heart },
-  { to: '/messages', label: 'Messages', icon: MessageCircle }
-];
-
-const mobileNavItems = [
-  { to: '/dashboard', label: 'Home', icon: Home },
-  { to: '/generate', label: 'Create', icon: WandSparkles },
-  { to: '/marketplace', label: 'Shop', icon: ShoppingBag },
-  { to: '/social', label: 'Social', icon: Heart },
-  { to: '/profile', label: 'Profile', icon: User }
-];
+import { createPortal } from 'react-dom';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -68,178 +34,102 @@ export default function Navbar() {
     setIsDropdownOpen(false);
   };
 
-  return (
+  const navContent = (
     <>
-      {/* Skip to main content — visible only on keyboard focus */}
-      <a href="#main-content" className="skip-link">
-        Skip to content
-      </a>
-
-      <nav className="sticky top-0 z-50 px-3 pt-3 sm:px-4" aria-label="Main navigation">
-        <div className="glass-shell px-4 py-3 sm:px-5">
-          <div className="flex min-h-[72px] items-center justify-between gap-4">
-            <Link to="/dashboard" className="flex min-w-0 shrink-0 items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-[18px] bg-[linear-gradient(45deg,#FF3CAC_0%,#784BA0_50%,#2B86C5_100%)] text-white shadow-[0_16px_28px_rgba(120,75,160,0.28)]">
-                <ChefHat className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <span className="block truncate font-display text-[1.05rem] font-extrabold text-slate-900">Kitchen Canvas</span>
-                <span className="block truncate text-[11px] font-medium tracking-[0.04em] text-slate-500">SOCIAL COOKING, ELEVATED</span>
-              </div>
-            </Link>
-
-            <div className="hidden min-w-0 flex-1 justify-center lg:flex">
-              <div className="custom-scrollbar flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-white/90 bg-white/70 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                {desktopNavItems.map((item) => (
-                  <DesktopNavLink
-                    key={item.to}
-                    to={item.to}
-                    icon={<item.icon className="h-4 w-4" />}
-                    label={item.label}
-                  />
-                ))}
-              </div>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-md border-b border-white/20 h-14 flex justify-between items-center px-4 md:px-10">
+        <Link to="/dashboard" className="font-headline-md text-lg text-primary flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>cooking</span>
+          Kitchen Canvas
+        </Link>
+        <div className="flex items-center gap-4">
+          <button className="material-symbols-outlined text-on-surface-variant hover:bg-white/10 p-2 rounded-full transition-colors cursor-pointer active:scale-95" title="Notifications">notifications</button>
+          
+          <div className="relative" ref={dropdownRef}>
+            <div 
+              className="w-8 h-8 rounded-full overflow-hidden border border-white/50 shadow-sm cursor-pointer active:scale-95 transition-transform"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <img alt="User Avatar" className="w-full h-full object-cover" src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <NotificationBadge />
-
-              <Link
-                to="/settings"
-                className="hidden rounded-full border border-white/90 bg-white/72 p-2.5 text-slate-600 shadow-[0_12px_24px_rgba(15,23,42,0.06)] transition hover:text-slate-900 md:inline-flex"
-              >
-                <Settings className="h-4 w-4" />
-              </Link>
-
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  id="user-menu-button"
-                  onClick={() => setIsDropdownOpen((current) => !current)}
-                  className="flex items-center gap-2 rounded-full border border-white/90 bg-white/78 px-2.5 py-2 text-sm font-medium text-slate-900 shadow-[0_12px_24px_rgba(15,23,42,0.06)]"
-                  aria-haspopup="menu"
-                  aria-expanded={isDropdownOpen}
-                  aria-controls="user-menu"
-                >
-                  <UserAvatar
-                    name={user?.name || 'User'}
-                    src={user?.avatar_url}
-                    size={36}
-                    className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full object-cover text-sm font-semibold text-white"
-                    textClassName="text-sm font-semibold text-white"
-                  />
-                  <div className="hidden text-left md:block">
-                    <span className="block max-w-28 truncate text-sm font-semibold">{user?.name || 'User'}</span>
-                    <span className="block max-w-28 truncate text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500">Studio account</span>
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl overflow-hidden py-1 z-50">
+                <Link to="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                  Profile
+                </Link>
+                <Link to="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                  <span className="material-symbols-outlined text-[20px]">settings</span>
+                  Settings
+                </Link>
+                <div className="h-px bg-slate-200/50 my-1"></div>
+                <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  Sign out
                 </button>
-
-                {isDropdownOpen && (
-                  <div
-                    id="user-menu"
-                    role="menu"
-                    aria-labelledby="user-menu-button"
-                    className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[28px] border border-white/90 bg-white/82 py-2 shadow-[0_24px_44px_rgba(15,23,42,0.08)] backdrop-blur-[18px]"
-                  >
-                    <div className="border-b border-white/90 px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <UserAvatar
-                          name={user?.name || 'User'}
-                          src={user?.avatar_url}
-                          size={44}
-                          className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full object-cover font-semibold text-white"
-                          textClassName="font-semibold text-white"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-900">{user?.name || 'User'}</p>
-                          <p className="truncate text-xs font-medium text-slate-500">{user?.email || 'user@example.com'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="px-2 py-2" role="none">
-                      <Link
-                        to="/profile"
-                        role="menuitem"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-white/85 hover:text-slate-900"
-                      >
-                        <User className="h-4 w-4" />
-                        <span>My Profile</span>
-                      </Link>
-
-                      <Link
-                        to="/settings"
-                        role="menuitem"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-white/85 hover:text-slate-900"
-                      >
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
-                      </Link>
-                    </div>
-
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleLogout}
-                      className="mx-2 flex w-[calc(100%-1rem)] items-center justify-center gap-3 rounded-full bg-[linear-gradient(45deg,#FF3CAC_0%,#784BA0_50%,#2B86C5_100%)] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(120,75,160,0.2)]"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      </nav>
+      </header>
 
-      <div className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-50 w-[min(calc(100vw-1rem),28rem)] -translate-x-1/2 px-0 lg:hidden">
-        <div className="grid grid-cols-5 rounded-[30px] border border-white/90 bg-white/78 p-2 shadow-[0_20px_40px_rgba(0,0,0,0.08)] backdrop-blur-[20px]">
-          {mobileNavItems.map((item) => (
-            <MobileNavLink key={item.to} to={item.to} icon={<item.icon className="h-4 w-4" />} label={item.label} />
-          ))}
-        </div>
-      </div>
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex justify-between items-center px-4 py-2 bg-white/40 backdrop-blur-2xl border border-white/30 w-[calc(100%-40px)] max-w-2xl rounded-full shadow-[0_40px_40px_-15px_rgba(245,158,11,0.08)]">
+        <NavLink to="/dashboard" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>dashboard</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Dashboard</span>
+            </>
+          )}
+        </NavLink>
+
+        <NavLink to="/generate" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>auto_awesome</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Generate</span>
+            </>
+          )}
+        </NavLink>
+
+        <NavLink to="/recipes" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>restaurant_menu</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Recipes</span>
+            </>
+          )}
+        </NavLink>
+
+        <NavLink to="/pantry" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>inventory_2</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Pantry</span>
+            </>
+          )}
+        </NavLink>
+
+        <NavLink to="/social" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>group</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Social</span>
+            </>
+          )}
+        </NavLink>
+        
+        <NavLink to="/meal-plan" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-transform duration-200 active:scale-90 ${isActive ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-white/20'}`}>
+          {({isActive}) => (
+            <>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>calendar_month</span>
+              <span className="font-label-sm text-xs sm:text-sm hidden sm:block">Plan</span>
+            </>
+          )}
+        </NavLink>
+      </nav>
     </>
   );
-}
 
-function DesktopNavLink({ to, icon, label }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-sm font-medium tracking-[-0.02em] transition ${
-          isActive
-            ? 'bg-[linear-gradient(45deg,#FF3CAC_0%,#784BA0_50%,#2B86C5_100%)] text-white shadow-[0_14px_28px_rgba(120,75,160,0.2)]'
-            : 'text-slate-600 hover:bg-white/90 hover:text-slate-900'
-        }`
-      }
-    >
-      {icon}
-      <span>{label}</span>
-    </NavLink>
-  );
-}
-
-function MobileNavLink({ to, icon, label }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `flex min-w-0 flex-col items-center justify-center gap-1 rounded-[22px] px-2 py-2 text-[11px] font-semibold tracking-[-0.02em] transition ${
-          isActive
-            ? 'bg-[linear-gradient(45deg,#FF3CAC_0%,#784BA0_50%,#2B86C5_100%)] text-white shadow-[0_14px_26px_rgba(120,75,160,0.22)]'
-            : 'text-slate-500'
-        }`
-      }
-    >
-      <span className="shrink-0">{icon}</span>
-      <span className="truncate">{label}</span>
-    </NavLink>
-  );
+  return createPortal(navContent, document.body);
 }

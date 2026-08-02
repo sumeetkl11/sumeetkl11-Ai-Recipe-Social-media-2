@@ -58,32 +58,64 @@ const groqChat = async (systemPrompt, userPrompt) => {
     if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY is not configured');
 
     const attempt = async () => {
-        const res = await fetch(GROQ_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
-                ],
-                response_format: { type: 'json_object' },
-                temperature: 0.7
-            })
-        });
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-        if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            const err = new Error(`Groq API error ${res.status}: ${detail.slice(0, 200)}`);
-            err.status = res.status;
+            const res = await fetch(GROQ_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    response_format: { type: 'json_object' },
+                    temperature: 0.7
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!res.ok) {
+                const detail = await res.text().catch(() => '');
+                const err = new Error(`Groq API error ${res.status}: ${detail.slice(0, 200)}`);
+                err.status = res.status;
+                throw err;
+            }
+
+            const data = await res.json();
+            return extractJsonPayload(data.choices[0].message.content);
+        } catch (err) {
+            // Handle network/timeout errors specifically
+            if (err.name === 'AbortError') {
+                console.error('Groq API Timeout: Request exceeded 30 seconds');
+                const timeoutErr = new Error('AI service request timed out. Please try again.');
+                timeoutErr.status = 504;
+                timeoutErr.code = 'TIMEOUT_ERROR';
+                throw timeoutErr;
+            }
+            if (err.name === 'TypeError' && err.message.includes('fetch failed')) {
+                console.error('Groq API Connection Error:', err.message, err.cause?.code);
+                const networkErr = new Error('Unable to connect to AI service. Please check your internet connection or try again later.');
+                networkErr.status = 503;
+                networkErr.code = 'NETWORK_ERROR';
+                throw networkErr;
+            }
+            if (err.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' || err.cause?.code === 'ECONNREFUSED' || err.cause?.code === 'ENOTFOUND') {
+                console.error('Groq API Network Error:', err.cause.code);
+                const networkErr = new Error('AI service is currently unreachable. Please try again later.');
+                networkErr.status = 503;
+                networkErr.code = 'NETWORK_ERROR';
+                throw networkErr;
+            }
             throw err;
         }
-
-        const data = await res.json();
-        return extractJsonPayload(data.choices[0].message.content);
     };
 
     // Simple retry: max 2 attempts on 429 or 5xx, wait 2s then 4s

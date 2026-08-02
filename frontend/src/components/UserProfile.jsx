@@ -203,8 +203,8 @@ export default function UserProfile() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
-      <section className="glass-card overflow-hidden p-0">
-        <div className="flex flex-col gap-3 border-b border-white/8 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <section className="glass-card overflow-hidden p-0 bg-white/40 border-white/60 backdrop-blur-md shadow-lg shadow-amber-500/5">
+        <div className="flex flex-col gap-3 border-b border-white/40 bg-white/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <h1 className="font-display text-xl text-slate-950">@{username}</h1>
           {isOwnProfile && (
             <CreatePost
@@ -250,22 +250,22 @@ export default function UserProfile() {
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-3 text-center sm:max-w-md">
-                <button className="rounded-2xl border border-white/8 bg-white/5 p-4" onClick={() => handleTabChange('posts')}>
+                <button className="rounded-2xl border border-white/60 bg-white/50 p-4 transition-all hover:bg-white/70 shadow-sm" onClick={() => handleTabChange('posts')}>
                   <p className="text-2xl font-bold text-slate-950">{posts.length}</p>
-                  <p className="mt-1 text-xs text-slate-600">posts</p>
+                  <p className="mt-1 text-xs font-semibold text-amber-700 tracking-wide uppercase">posts</p>
                 </button>
-                <button className="rounded-2xl border border-white/8 bg-white/5 p-4" onClick={() => handleTabChange('followers')}>
+                <button className="rounded-2xl border border-white/60 bg-white/50 p-4 transition-all hover:bg-white/70 shadow-sm" onClick={() => handleTabChange('followers')}>
                   <p className="text-2xl font-bold text-slate-950">{profile.followers_count || 0}</p>
-                  <p className="mt-1 text-xs text-slate-600">followers</p>
+                  <p className="mt-1 text-xs font-semibold text-amber-700 tracking-wide uppercase">followers</p>
                 </button>
-                <button className="rounded-2xl border border-white/8 bg-white/5 p-4" onClick={() => handleTabChange('following')}>
+                <button className="rounded-2xl border border-white/60 bg-white/50 p-4 transition-all hover:bg-white/70 shadow-sm" onClick={() => handleTabChange('following')}>
                   <p className="text-2xl font-bold text-slate-950">{profile.following_count || 0}</p>
-                  <p className="mt-1 text-xs text-slate-600">following</p>
+                  <p className="mt-1 text-xs font-semibold text-amber-700 tracking-wide uppercase">following</p>
                 </button>
               </div>
 
               {isOwnProfile && (
-                <div className="mt-6 rounded-3xl border border-white/10 bg-white/60 p-4 backdrop-blur">
+                <div className="mt-6 rounded-3xl border border-white/60 bg-white/40 p-4 backdrop-blur-md shadow-sm">
                   <label className="block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                     Profile Photo URL
                   </label>
@@ -275,7 +275,7 @@ export default function UserProfile() {
                       value={profile.avatar_url || ''}
                       onChange={(event) => handleOwnProfileChange('avatar_url', event.target.value)}
                       placeholder="https://example.com/your-photo.jpg"
-                      className="flex-1 rounded-2xl border border-white/10 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-amber-300 focus:bg-white"
+                      className="flex-1 rounded-2xl border border-white/60 bg-white/50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-sm"
                     />
                   </div>
                   <div className="mt-3">

@@ -17,6 +17,7 @@ const MyRecipes = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     let filtered = recipes;
@@ -61,15 +62,22 @@ const MyRecipes = () => {
   useRevalidateOnFocus(() => fetchRecipes({ silent: true }));
 
   const handleDelete = async (id) => {
+    if (deletingId) return;
+
     if (!window.confirm('Are you sure you want to delete this recipe?')) {
       return;
     }
 
     try {
+      setDeletingId(id);
       await api.delete(`/recipes/${id}`);
+      toast.success('Recipe deleted');
       setRecipes((current) => current.filter((recipe) => recipe.id !== id));
     } catch (error) {
-      toast.error('Failed to delete recipe');
+      console.error('Failed to delete recipe:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete recipe');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -88,8 +96,13 @@ const MyRecipes = () => {
     <div className="page-bg min-h-screen">
       <Navbar />
 
-      <div className="mx-auto px-4 pb-12 pt-8 sm:px-6">
-        <div className="page-hero glass-panel mb-6 rounded-[32px] p-8">
+      <div className="mx-auto px-4 pb-12 pt-8 sm:px-6 max-w-7xl relative">
+        {/* Decorative blobs behind main container */}
+        <div className="absolute top-40 left-10 w-[500px] h-[500px] bg-orange-400/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+        <div className="absolute bottom-40 right-10 w-[600px] h-[600px] bg-amber-400/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+        <div className="page-hero glass-panel mb-8 rounded-[32px] p-8 overflow-hidden relative">
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="eyebrow mb-4">
             <Sparkles className="h-4 w-4" />
             Saved Collection
@@ -114,7 +127,7 @@ const MyRecipes = () => {
           </div>
         </div>
 
-        <div className="glass-card mb-6 p-4">
+        <div className="glass-card mb-8 p-4 relative z-10 backdrop-blur-xl bg-white/40 border-white/60 shadow-lg shadow-amber-500/5">
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
@@ -123,14 +136,14 @@ const MyRecipes = () => {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search recipes..."
-                className="ghost-input w-full px-12 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition"
+                className="w-full rounded-full border border-white/60 bg-white/40 pl-12 pr-4 py-3 text-slate-900 placeholder:text-slate-500 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-md"
               />
             </div>
 
             <select
               value={selectedCuisine}
               onChange={(event) => setSelectedCuisine(event.target.value)}
-              className="ghost-input rounded-2xl px-4 py-3 text-slate-900 outline-none transition"
+              className="rounded-full border border-white/60 bg-white/40 px-5 py-3 text-slate-900 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-md appearance-none"
             >
               {cuisines.map((cuisine) => (
                 <option key={cuisine} value={cuisine}>
@@ -142,7 +155,7 @@ const MyRecipes = () => {
             <select
               value={selectedDifficulty}
               onChange={(event) => setSelectedDifficulty(event.target.value)}
-              className="ghost-input rounded-2xl px-4 py-3 text-slate-900 outline-none transition"
+              className="rounded-full border border-white/60 bg-white/40 px-5 py-3 text-slate-900 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-md appearance-none"
             >
               {difficulties.map((difficulty) => (
                 <option key={difficulty} value={difficulty}>
@@ -162,7 +175,12 @@ const MyRecipes = () => {
         {filteredRecipes.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {filteredRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} onDelete={handleDelete} />
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                onDelete={handleDelete}
+                isDeleting={deletingId === recipe.id}
+              />
             ))}
           </div>
         ) : (
@@ -183,11 +201,11 @@ const MyRecipes = () => {
   );
 };
 
-const RecipeCard = ({ recipe, onDelete }) => {
+const RecipeCard = ({ recipe, onDelete, isDeleting }) => {
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
 
   return (
-    <div className="group overflow-hidden rounded-[28px] border border-white/10  shadow-[0_20px_60px_rgba(15,23,42,0.35)] transition duration-500 hover:-translate-y-1.5 hover:shadow-[0_24px_80px_rgba(245,158,11,0.12)]">
+    <div className="group overflow-hidden rounded-[28px] border border-white/60 bg-white/40 backdrop-blur-md shadow-[0_16px_40px_rgba(245,158,11,0.05)] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_24px_50px_rgba(245,158,11,0.15)] hover:bg-white/60">
       <div className="relative h-56 overflow-hidden">
         {recipe.image_url ? (
           <img
@@ -217,7 +235,7 @@ const RecipeCard = ({ recipe, onDelete }) => {
 
       <div className="p-6">
         <Link to={`/recipes/${recipe.id}`} className="mb-4 block">
-          <h3 className="line-clamp-2 text-2xl font-semibold text-slate-950 transition group-hover:text-fuchsia-600">
+          <h3 className="line-clamp-2 text-2xl font-semibold text-slate-950 transition group-hover:text-orange-600">
             {recipe.name}
           </h3>
           {recipe.description && (
@@ -251,7 +269,10 @@ const RecipeCard = ({ recipe, onDelete }) => {
           </Link>
           <button
             onClick={() => onDelete(recipe.id)}
-            className="inline-flex items-center justify-center rounded-2xl border border-rose-400/20 bg-rose-400/8 px-4 py-3 text-rose-600 transition hover:bg-rose-400/14"
+            disabled={isDeleting}
+            type="button"
+            title={isDeleting ? 'Deleting recipe...' : 'Delete recipe'}
+            className="inline-flex items-center justify-center rounded-2xl border border-rose-400/20 bg-rose-400/8 px-4 py-3 text-rose-600 transition hover:bg-rose-400/14 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" />
           </button>

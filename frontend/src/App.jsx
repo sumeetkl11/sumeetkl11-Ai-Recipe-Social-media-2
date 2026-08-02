@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ClickSpark from './components/ClickSpark';
 import ErrorBoundary from './components/ErrorBoundary';
+import DesktopBottomNav from './components/DesktopBottomNav';
 
 import RouteSceneAnimator from './components/RouteSceneAnimator';
 import { useAuth } from './context/AuthContext';

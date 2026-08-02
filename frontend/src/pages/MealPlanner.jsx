@@ -145,61 +145,70 @@ const MealPlanner = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="page-bg min-h-screen">
             <Navbar />
 
-            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Meal Planner</h1>
-                        <p className="text-gray-600 mt-1">Plan your weekly meals</p>
-                    </div>
+            <div className="mx-auto px-4 py-8 sm:px-6 max-w-[1400px] relative">
+                {/* Decorative blobs behind main container */}
+                <div className="absolute top-20 right-10 w-[500px] h-[500px] bg-orange-400/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+                <div className="absolute top-[40%] left-10 w-[600px] h-[600px] bg-amber-400/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-                    {/* Week Navigation */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setWeekStart(addDays(weekStart, -7))}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-                        >
-                            Previous Week
-                        </button>
-                        <button
-                            onClick={() => setWeekStart(startOfWeek(new Date()))}
-                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
-                        >
-                            This Week
-                        </button>
-                        <button
-                            onClick={() => setWeekStart(addDays(weekStart, 7))}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-                        >
-                            Next Week
-                        </button>
+                {/* Header */}
+                <div className="page-hero glass-panel mb-8 rounded-[32px] p-8 overflow-hidden relative shadow-lg shadow-amber-500/5">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                    
+                    <div className="flex flex-col gap-6 md:flex-row md:items-center justify-between relative z-10">
+                        <div>
+                            <div className="eyebrow mb-4">
+                                <CalendarIcon className="h-4 w-4" />
+                                Weekly Overview
+                            </div>
+                            <h1 className="font-display text-4xl text-slate-900">Meal Planner</h1>
+                        </div>
+
+                        {/* Week Navigation */}
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setWeekStart(addDays(weekStart, -7))}
+                                className="px-4 py-2.5 bg-white/40 border border-white/60 text-slate-700 rounded-full hover:bg-white/60 font-medium transition-all backdrop-blur-sm"
+                            >
+                                Previous Week
+                            </button>
+                            <button
+                                onClick={() => setWeekStart(startOfWeek(new Date()))}
+                                className="px-5 py-2.5 bg-gradient-to-br from-amber-500 to-orange-600 hover:scale-105 text-white rounded-full font-medium shadow-md shadow-orange-500/20 transition-all border border-transparent"
+                            >
+                                This Week
+                            </button>
+                            <button
+                                onClick={() => setWeekStart(addDays(weekStart, 7))}
+                                className="px-4 py-2.5 bg-white/40 border border-white/60 text-slate-700 rounded-full hover:bg-white/60 font-medium transition-all backdrop-blur-sm"
+                            >
+                                Next Week
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {/* Week Display */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">Week of</p>
-                        <p className="text-lg font-semibold text-gray-900">
-                            {formatDate(weekStart, 'MMMM d')} - {formatDate(addDays(weekStart, 6), 'MMMM d, yyyy')}
-                        </p>
-                    </div>
+                <div className="glass-card mb-8 p-5 text-center bg-white/40 border border-white/60 backdrop-blur-md">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-amber-700">Week of</p>
+                    <p className="text-2xl font-display text-slate-900 mt-1">
+                        {formatDate(weekStart, 'MMMM d')} - {formatDate(addDays(weekStart, 6), 'MMMM d, yyyy')}
+                    </p>
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="glass-card overflow-hidden bg-white/40 border border-white/60 backdrop-blur-md">
                     {/* Header Row */}
-                    <div className="grid grid-cols-8 border-b border-gray-200 bg-gray-50">
-                        <div className="p-4 font-semibold text-gray-700 border-r border-gray-200">
+                    <div className="grid grid-cols-8 border-b border-white/40 bg-white/30 backdrop-blur-sm">
+                        <div className="p-4 font-semibold text-slate-700 border-r border-white/40 flex items-center justify-center">
                             Meal
                         </div>
                         {DAYS_OF_WEEK.map((day, index) => (
-                            <div key={day} className="p-4 text-center border-r border-gray-200 last:border-r-0">
-                                <div className="font-semibold text-gray-900">{day}</div>
-                                <div className="text-sm text-gray-500">
+                            <div key={day} className="p-4 text-center border-r border-white/40 last:border-r-0">
+                                <div className="font-semibold text-slate-900">{day.substring(0,3)}</div>
+                                <div className="text-sm text-slate-500 font-medium">
                                     {formatDate(addDays(weekStart, index), 'MMM d')}
                                 </div>
                             </div>
@@ -208,8 +217,8 @@ const MealPlanner = () => {
 
                     {/* Meal Rows */}
                     {MEAL_TYPES.map(mealType => (
-                        <div key={mealType} className="grid grid-cols-8 border-b border-gray-200 last:border-b-0">
-                            <div className="p-4 font-medium text-gray-700 capitalize border-r border-gray-200 bg-gray-50">
+                        <div key={mealType} className="grid grid-cols-8 border-b border-white/40 last:border-b-0">
+                            <div className="p-4 font-semibold text-slate-700 capitalize border-r border-white/40 bg-white/30 backdrop-blur-sm flex items-center justify-center">
                                 {mealType}
                             </div>
                             {DAYS_OF_WEEK.map((_, dayIndex) => {
@@ -220,28 +229,29 @@ const MealPlanner = () => {
                                 return (
                                     <div
                                         key={dayIndex}
-                                        className="p-3 border-r border-gray-200 last:border-r-0 min-h-[100px] hover:bg-gray-50 transition-colors"
+                                        className="p-3 border-r border-white/40 last:border-r-0 min-h-[120px] hover:bg-white/50 transition-colors"
                                     >
                                         {meal ? (
-                                            <div className="relative group">
-                                                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                                                    <p className="text-sm font-medium text-emerald-900 line-clamp-2">
+                                            <div className="relative group h-full">
+                                                <div className="bg-gradient-to-br from-amber-300/40 to-orange-400/20 border border-amber-300/30 rounded-xl p-3 h-full flex items-center justify-center shadow-sm backdrop-blur-md">
+                                                    <p className="text-sm font-semibold text-amber-950 text-center line-clamp-3">
                                                         {meal.recipe_name}
                                                     </p>
                                                     <button
                                                         onClick={() => handleRemoveMeal(meal.id)}
-                                                        className="absolute top-1 right-1 p-1 bg-white rounded hover:bg-red-50 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute -top-2 -right-2 p-1.5 bg-rose-500 rounded-full hover:bg-rose-600 text-white opacity-0 group-hover:opacity-100 transition-all shadow-md scale-75 group-hover:scale-100"
                                                     >
-                                                        <X className="w-4 h-4" />
+                                                        <X className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleAddMeal(date, mealType)}
-                                                className="w-full h-full flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors group"
+                                                className="w-full h-full flex flex-col items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-white/60 rounded-xl transition-all group border-2 border-dashed border-white/40 hover:border-amber-400/50"
                                             >
-                                                <Plus className="w-6 h-6" />
+                                                <Plus className="w-6 h-6 mb-1" />
+                                                <span className="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">Add</span>
                                             </button>
                                         )}
                                     </div>
@@ -252,20 +262,20 @@ const MealPlanner = () => {
                 </div>
 
                 {/* Stats */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                        <p className="text-sm text-gray-600">Meals Planned</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="glass-card bg-white/40 border border-white/60 p-5 backdrop-blur-md">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Meals Planned</p>
+                        <p className="text-3xl font-display text-slate-900 mt-1">
                             {Object.values(mealPlan).reduce((acc, day) => acc + Object.keys(day).length, 0)}
                         </p>
                     </div>
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                        <p className="text-sm text-gray-600">Total Recipes</p>
-                        <p className="text-2xl font-bold text-gray-900">{recipes.length}</p>
+                    <div className="glass-card bg-white/40 border border-white/60 p-5 backdrop-blur-md">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Total Recipes</p>
+                        <p className="text-3xl font-display text-slate-900 mt-1">{recipes.length}</p>
                     </div>
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                        <p className="text-sm text-gray-600">This Week</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                    <div className="glass-card bg-white/40 border border-white/60 p-5 backdrop-blur-md">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">This Week</p>
+                        <p className="text-xl font-display text-slate-900 mt-2">
                             {formatDate(weekStart, 'MMM d')} - {formatDate(addDays(weekStart, 6), 'MMM d')}
                         </p>
                     </div>
@@ -327,7 +337,8 @@ const AddMealModal = ({ date, mealType, recipes, onClose, onSuccess }) => {
             toast.success('Meal added to plan');
             onSuccess();
         } catch (error) {
-            toast.error('Failed to add meal');
+            const message = error.response?.data?.error?.message || error.response?.data?.message || 'Failed to add meal';
+            toast.error(message);
         } finally {
             setLoading(false);
         }

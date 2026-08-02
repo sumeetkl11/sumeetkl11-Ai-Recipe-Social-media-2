@@ -32,30 +32,37 @@ export default function ChallengesPage() {
   return (
     <div className="page-bg min-h-screen">
       <Navbar />
-      <div className="max-w-8xl mx-auto px-4 py-8">
-        <div className="glass-panel mb-6 rounded-[32px] p-8">
-          <div className="eyebrow mb-4">Challenges</div>
-          <h1 className="font-display text-4xl text-white">Weekly Challenges</h1>
+      <div className="max-w-6xl mx-auto px-4 py-8 relative">
+        {/* Decorative blobs behind main container */}
+        <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-orange-400/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+        <div className="absolute top-[40%] left-10 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+        <div className="glass-panel mb-6 rounded-[32px] p-8 shadow-lg shadow-amber-500/5 relative overflow-hidden">
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10">
+            <div className="eyebrow mb-4 text-amber-700 tracking-[0.2em] font-bold text-xs uppercase">Challenges</div>
+            <h1 className="font-display text-4xl text-slate-900">Weekly Challenges</h1>
+          </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-4 border-b border-white/10">
+        <div className="mb-8 flex gap-4 border-b border-white/40">
           <button
             onClick={() => setActiveTab('active')}
-            className={`px-6 py-2 border-b-2 font-semibold transition ${
+            className={`px-6 py-3 border-b-2 font-semibold transition-all ${
               activeTab === 'active'
-                ? 'border-amber-300 text-amber-200'
-                : 'border-transparent text-slate-400 hover:text-white'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             Active Challenges
           </button>
           <button
             onClick={() => setActiveTab('results')}
-            className={`px-6 py-2 border-b-2 font-semibold transition ${
+            className={`px-6 py-3 border-b-2 font-semibold transition-all ${
               activeTab === 'results'
-                ? 'border-amber-300 text-amber-200'
-                : 'border-transparent text-slate-400 hover:text-white'
+                ? 'border-amber-500 text-amber-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             Results
@@ -83,7 +90,7 @@ export default function ChallengesPage() {
           </div>
         ) : (
           <div>
-            <h2 className="mb-6 text-2xl font-bold text-white">Challenge Results</h2>
+            <h2 className="mb-6 text-2xl font-bold text-slate-900">Challenge Results</h2>
             {selectedChallenge && (
               <Leaderboard 
                 challengeId={selectedChallenge}
@@ -92,10 +99,10 @@ export default function ChallengesPage() {
             )}
             {!selectedChallenge && (
               <div className="text-center py-12">
-                <p className="mb-4 text-slate-300">Select a challenge to view results</p>
+                <p className="mb-4 text-slate-500 font-medium">Select a challenge to view results</p>
                 <button
                   onClick={() => setActiveTab('active')}
-                  className="font-semibold text-amber-200 hover:text-amber-100"
+                  className="font-semibold text-amber-600 hover:text-amber-700 transition-colors"
                 >
                   ← Back to Active Challenges
                 </button>

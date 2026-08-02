@@ -24,34 +24,42 @@ class PantryItem {
 
     // Get all pantry items for a user
     static async findByUserId(userId, filters = {}) {
-        
-        let query = `SELECT * FROM pantry_items WHERE user_id = $1`;
-        const params = [userId];
-        let paramCount = 1;
+        try {
+            let query = `SELECT * FROM pantry_items WHERE user_id = $1`;
+            const params = [userId];
+            let paramCount = 1;
 
-        if (filters.category) {
-            paramCount++;
-            query += ` AND category = $${paramCount}`;
-            params.push(filters.category);
+            if (filters.category) {
+                paramCount++;
+                query += ` AND category = $${paramCount}`;
+                params.push(filters.category);
+            }
+
+            if (filters.is_running_low !== undefined) {
+                paramCount++;
+                query += ` AND is_running_low = $${paramCount}`;
+                params.push(filters.is_running_low);
+            }
+
+            if (filters.search) {
+                paramCount++;
+                query += ` AND name ILIKE $${paramCount}`;
+                params.push(`%${filters.search}%`);
+            }
+
+            query += ` ORDER BY created_at DESC`;
+            
+            const result = await pool.query(query, params);
+            return result.rows;
+        } catch (error) {
+            console.error('[PantryItem.findByUserId] Database query failed:', {
+                error: error.message,
+                code: error.code,
+                userId,
+                filters
+            });
+            throw error;
         }
-
-        if (filters.is_running_low !== undefined) {
-            paramCount++;
-            query += ` AND is_running_low = $${paramCount}`;
-            params.push(filters.is_running_low);
-        }
-
-        if (filters.search) {
-            paramCount++;
-            query += ` AND name ILIKE $${paramCount}`;
-            params.push(`%${filters.search}%`);
-        }
-
-        query += ` ORDER BY created_at DESC`;
-        
-        const result = await pool.query(query, params);
-        return result.rows;
-        
     }
 
     // Get item expiring soon (within 7 days)
@@ -110,17 +118,29 @@ class PantryItem {
 
     // get pantry stats 
     static async getStats(userId) {
-        const result = await pool.query(
-            `SELECT 
-                COUNT(*) as total_items,
-                COUNT(DISTINCT category) as total_categories,
-                COUNT(*) FILTER (WHERE is_running_low = true) as running_low_count,
-                COUNT(*) FILTER (WHERE expiry_date <= CURRENT_DATE + INTERVAL '7 days' AND expiry_date >= CURRENT_DATE) as expiring_soon_count
-            FROM pantry_items 
-            WHERE user_id = $1`,
-            [userId]
-        );
-        return result.rows[0];
+        try {
+            const result = await pool.query(
+                `SELECT 
+                    COUNT(*) as total_items,
+                    COUNT(DISTINCT category) as total_categories,
+                    COUNT(*) FILTER (WHERE is_running_low = true) as running_low_count,
+                    COUNT(*) FILTER (WHERE expiry_date <= CURRENT_DATE + INTERVAL '7 days' AND expiry_date >= CURRENT_DATE) as expiring_soon_count
+                FROM pantry_items 
+                WHERE user_id = $1`,
+                [userId]
+            );
+            return result.rows[0];
+        } catch (error) {
+            console.error('[PantryItem.getStats] Database query failed:', {
+                error: error.message,
+                code: error.code,
+                detail: error.detail,
+                table: error.table,
+                column: error.column,
+                userId
+            });
+            throw error;
+        }
     }
 
 

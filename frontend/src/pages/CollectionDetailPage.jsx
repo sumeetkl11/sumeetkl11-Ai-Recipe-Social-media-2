@@ -75,8 +75,8 @@ export default function CollectionDetailPage() {
     return (
       <div className="page-bg min-h-screen">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="h-32 rounded-lg bg-white/8 animate-pulse" />
+        <div className="max-w-6xl mx-auto px-4 py-8 relative">
+          <div className="h-32 rounded-3xl bg-white/40 border border-white/60 animate-pulse" />
         </div>
       </div>
     );
@@ -85,18 +85,22 @@ export default function CollectionDetailPage() {
   return (
     <div className="page-bg min-h-screen">
       <Navbar />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 relative">
+        {/* Decorative blobs behind main container */}
+        <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-orange-400/10 rounded-full blur-[80px] -z-10 pointer-events-none" />
+        <div className="absolute top-[40%] left-10 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 font-semibold text-amber-200 hover:text-amber-100"
+            className="flex items-center gap-2 font-semibold text-amber-600 hover:text-amber-700 transition-colors"
           >
             <ChevronLeft size={20} /> Back
           </button>
           <div>
-            <h1 className="font-display text-4xl text-white">{collection?.name}</h1>
-            <p className="mt-2 text-slate-400">{recipes.length} recipes</p>
+            <h1 className="font-display text-4xl text-slate-900">{collection?.name}</h1>
+            <p className="mt-2 text-slate-500 font-medium">{recipes.length} recipes</p>
           </div>
         </div>
 
@@ -109,12 +113,12 @@ export default function CollectionDetailPage() {
             <Plus size={20} /> Add Recipe
           </button>
         ) : (
-          <div className="glass-card mb-8 p-6">
+          <div className="glass-panel mb-8 p-6 rounded-[32px] shadow-sm">
             <div className="flex gap-4">
               <select
                 value={selectedRecipe}
                 onChange={(e) => setSelectedRecipe(e.target.value)}
-                className="flex-1 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none"
+                className="flex-1 rounded-2xl border border-white/60 bg-white/50 px-5 py-3.5 text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 backdrop-blur-sm transition-all"
               >
                 <option value="">Select a recipe...</option>
                 {availableRecipes.map(recipe => (
@@ -141,15 +145,15 @@ export default function CollectionDetailPage() {
 
         {/* Recipes Grid */}
         {recipes.length === 0 ? (
-          <div className="glass-card text-center py-12">
-            <p className="text-slate-300">No recipes in this collection yet</p>
+          <div className="glass-card text-center py-12 bg-white/40 border-white/60 backdrop-blur-md">
+            <p className="text-slate-500 font-medium">No recipes in this collection yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recipes.map(recipe => (
               <div
                 key={recipe.id}
-                className="glass-card overflow-hidden"
+                className="glass-card overflow-hidden bg-white/40 border-white/60 backdrop-blur-md transition-all hover:bg-white/60 hover:-translate-y-1 hover:shadow-lg shadow-amber-500/5 group"
               >
                 {recipe.image && (
                   <img
@@ -159,13 +163,13 @@ export default function CollectionDetailPage() {
                   />
                 )}
                 <div className="p-4">
-                  <h3 className="mb-2 font-semibold text-white">{recipe.name}</h3>
-                  <p className="mb-4 line-clamp-2 text-sm text-slate-400">
+                  <h3 className="mb-2 font-semibold text-slate-900 group-hover:text-amber-600 transition-colors">{recipe.name}</h3>
+                  <p className="mb-4 line-clamp-2 text-sm text-slate-500 font-medium">
                     {recipe.description}
                   </p>
                   <button
                     onClick={() => handleRemoveRecipe(recipe.id)}
-                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 font-semibold text-red-600 transition hover:bg-red-100"
+                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-red-50/80 px-3 py-2 font-semibold text-red-600 transition hover:bg-red-100"
                   >
                     <Trash2 size={16} /> Remove
                   </button>

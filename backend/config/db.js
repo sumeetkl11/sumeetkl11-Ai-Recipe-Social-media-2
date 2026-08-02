@@ -17,8 +17,10 @@ const poolConfig = {
     max: 20, // Maximum number of clients in pool
     min: 2, // Minimum number of clients in pool
     idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-    connectionTimeoutMillis: 2000, // Return error after 2 seconds if connection can't be established
+    connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection can't be established (increased from 2s to handle concurrent requests)
     maxUses: 7500, // Close & replace connection after 7500 uses
+    // Add query timeout to prevent queries from holding connections indefinitely
+    query_timeout: 30000, // 30 second query timeout
 };
 
 if (connectionString) {
@@ -38,7 +40,12 @@ const pool = new Pool(poolConfig);
 
 // Log pool errors
 pool.on('error', (err, client) => {
-    console.error('Unexpected error on idle client', err);
+    console.error('[DB Pool] Unexpected error on idle client:', {
+        error: err.message,
+        code: err.code,
+        // Only log full stack in development
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
 });
 
 // Graceful shutdown
@@ -51,8 +58,25 @@ process.on('SIGINT', async () => {
 export { pool };
 
 export const initDB = async () => {
+    console.log('[DB] Starting database initialization...');
+    
     try {
+        // Test database connection first
+        const connectionTest = await pool.query('SELECT NOW() as current_time');
+        console.log('[DB] ✅ Database connection successful:', connectionTest.rows[0].current_time);
+        
+        // Check if critical tables exist
+        const tablesCheck = await pool.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name IN ('users', 'recipes', 'pantry_items', 'meal_plans', 'posts', 'follows')
+            ORDER BY table_name
+        `);
+        console.log('[DB] Existing tables:', tablesCheck.rows.map(r => r.table_name).join(', '));
+        
         // ensure the users table has a name column (migrations are minimal)
+        console.log('[DB] Altering users table...');
         await pool.query(
             `ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255) NOT NULL DEFAULT ''`);
         await pool.query(`
@@ -62,9 +86,15 @@ export const initDB = async () => {
             ADD COLUMN IF NOT EXISTS follower_count INT DEFAULT 0,
             ADD COLUMN IF NOT EXISTS following_count INT DEFAULT 0
         `);
+        console.log('[DB] ✅ Users table updated');
+        
+        console.log('[DB] Altering posts table...');
         await pool.query(
             `ALTER TABLE posts ALTER COLUMN recipe_id DROP NOT NULL`
         );
+        console.log('[DB] ✅ Posts table updated');
+        
+        console.log('[DB] Altering conversations table...');
         await pool.query(`
             ALTER TABLE conversations
             ADD COLUMN IF NOT EXISTS user_one_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -79,10 +109,16 @@ export const initDB = async () => {
               last_message_at = COALESCE(last_message_at, updated_at, created_at, NOW())
             WHERE user_one_id IS NULL OR user_two_id IS NULL OR last_message_at IS NULL
         `);
+        console.log('[DB] ✅ Conversations table updated');
+        
+        console.log('[DB] Altering messages table...');
         await pool.query(`
             ALTER TABLE messages
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
         `);
+        console.log('[DB] ✅ Messages table updated');
+        
+        console.log('[DB] Creating conversation indices...');
         await pool.query(`
             CREATE UNIQUE INDEX IF NOT EXISTS idx_conversations_user_pair_unique
             ON conversations(user_one_id, user_two_id)
@@ -91,7 +127,10 @@ export const initDB = async () => {
             CREATE UNIQUE INDEX IF NOT EXISTS idx_conversations_user_pair_unique_rev
             ON conversations(user_two_id, user_one_id)
         `);
+        console.log('[DB] ✅ Conversation indices created');
+        
         // Marketplace & Shopping system tables
+        console.log('[DB] Creating marketplace tables...');
         await pool.query(`
             CREATE TABLE IF NOT EXISTS marketplace_listings (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -152,10 +191,21 @@ export const initDB = async () => {
                 created_at TIMESTAMPTZ DEFAULT NOW()
             )
         `);
+        console.log('[DB] ✅ Marketplace tables created');
 
-        console.log('Database schema validated successfully');
+        console.log('[DB] ✅ Database schema validated successfully');
     } catch (err) {
-        console.error('Error during database schema validation:', err);
+        console.error('[DB] ❌ Error during database initialization:', {
+            error: err.message,
+            code: err.code,
+            detail: err.detail,
+            hint: err.hint,
+            table: err.table,
+            column: err.column,
+            constraint: err.constraint,
+            stack: err.stack
+        });
+        throw err; // Re-throw to prevent server from starting with broken DB
     }
 };
 

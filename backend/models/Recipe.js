@@ -76,14 +76,37 @@ class Recipe {
                 );
             }
 
-            await client.query('COMMIT');
+            const recipeRecord = { ...recipe };
 
-            // fetch complete recipe
-            return await this.findById(recipe.id, userId);
+            // Fetch ingredients and nutrition within the same transaction to avoid a second pool connection
+            const [ingredientsResult, nutritionResult] = await Promise.all([
+                client.query(
+                    `SELECT ingredient_name as name, quantity, unit FROM recipe_ingredients WHERE recipe_id = $1`,
+                    [recipe.id]
+                ),
+                client.query(
+                    `SELECT calories, protein, carbs, fat, fiber FROM recipe_nutrition WHERE recipe_id = $1`,
+                    [recipe.id]
+                )
+            ]);
+
+            recipeRecord.ingredients = ingredientsResult.rows;
+            recipeRecord.nutrition = nutritionResult.rows[0] || null;
+
+            if (typeof recipeRecord.instructions === 'string') {
+                try {
+                    recipeRecord.instructions = JSON.parse(recipeRecord.instructions);
+                } catch (e) {
+                    recipeRecord.instructions = [];
+                }
+            }
+
+            await client.query('COMMIT');
+            return recipeRecord;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
-        }finally {
+        } finally {
             client.release();
         }
 
@@ -174,16 +197,29 @@ static async findById(id, userId) {
 
     // Get recent recipe
     static async getRecent(userId, limit = 5) {
-        const result = await pool.query(
-            `SELECT r.*, rn.calories
-            FROM recipes r 
-            LEFT JOIN recipe_nutrition rn ON r.id = rn.recipe_id 
-            WHERE r.user_id = $1
-            ORDER BY r.created_at DESC 
-            LIMIT $2`,
-            [userId, limit]
-        );
-        return result.rows;
+        try {
+            const result = await pool.query(
+                `SELECT r.*, rn.calories
+                FROM recipes r 
+                LEFT JOIN recipe_nutrition rn ON r.id = rn.recipe_id 
+                WHERE r.user_id = $1
+                ORDER BY r.created_at DESC 
+                LIMIT $2`,
+                [userId, limit]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error('[Recipe.getRecent] Database query failed:', {
+                error: error.message,
+                code: error.code,
+                detail: error.detail,
+                table: error.table,
+                column: error.column,
+                userId,
+                limit
+            });
+            throw error;
+        }
     }
 
     // Update recipe
@@ -234,16 +270,28 @@ static async findById(id, userId) {
 
     // get recipe stats
     static async getStats(userId) {
-        const result = await pool.query(
-            `SELECT 
-                COUNT(*) as total_recipes,
-                COUNT(DISTINCT cuisine_type) as cuisine_types_count,
-                AVG(cook_time) as avg_cook_time
-            FROM recipes 
-            WHERE user_id = $1`,
-            [userId]
-        );
-        return result.rows[0];
+        try {
+            const result = await pool.query(
+                `SELECT 
+                    COUNT(*) as total_recipes,
+                    COUNT(DISTINCT cuisine_type) as cuisine_types_count,
+                    AVG(cook_time) as avg_cook_time
+                FROM recipes 
+                WHERE user_id = $1`,
+                [userId]
+            );
+            return result.rows[0];
+        } catch (error) {
+            console.error('[Recipe.getStats] Database query failed:', {
+                error: error.message,
+                code: error.code,
+                detail: error.detail,
+                table: error.table,
+                column: error.column,
+                userId
+            });
+            throw error;
+        }
     }
 }                   
 
