@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { getIngredientImage, getCategoryEmoji } from '../utils/ingredientImageHelper';
+import { CATEGORY_FALLBACKS } from '../data/ingredientImages';
 
 const CATEGORIES = ['Vegetables', 'Fruits', 'Dairy', 'Proteins', 'Grains', 'Spices', 'Other'];
 const UNITS = ['pieces', 'kg', 'g', 'lbs', 'oz', 'ml', 'l', 'cups', 'tbsp', 'tsp', 'pack', 'can', 'bottle'];
@@ -26,6 +28,9 @@ const Pantry = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [simpleView, setSimpleView] = useState(() => {
+    return localStorage.getItem('pantryViewMode') === 'simple';
+  });
 
   const fetchPantryItems = useCallback(async () => {
     try {
@@ -116,6 +121,18 @@ const Pantry = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Your Pantry</h1>
               <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => {
+                    const newMode = !simpleView;
+                    setSimpleView(newMode);
+                    localStorage.setItem('pantryViewMode', newMode ? 'simple' : 'photo');
+                  }}
+                  className="cc-glass-pill px-4 py-2 rounded-full font-label-md flex items-center gap-2 hover:bg-white/60 transition-all whitespace-nowrap border border-white/50"
+                  title={simpleView ? 'Switch to Photo View' : 'Switch to Simple View'}
+                >
+                  <span className="text-lg">{simpleView ? '📷' : '📋'}</span>
+                  {simpleView ? 'Photos' : 'Simple'}
+                </button>
                 <div className="relative flex-grow min-w-[200px]">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
                   <input 
@@ -177,7 +194,8 @@ const Pantry = () => {
                     key={item.id} 
                     item={item} 
                     onEdit={() => setEditingItem(item)} 
-                    onDelete={() => handleDelete(item.id)} 
+                    onDelete={() => handleDelete(item.id)}
+                    simpleView={simpleView}
                   />
                 ))}
               </div>
@@ -275,7 +293,7 @@ const Pantry = () => {
   );
 };
 
-const PantryItemCard = ({ item, onEdit, onDelete }) => {
+const PantryItemCard = ({ item, onEdit, onDelete, simpleView }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -302,8 +320,21 @@ const PantryItemCard = ({ item, onEdit, onDelete }) => {
   return (
     <div className="cc-glass-pill rounded-2xl p-4 flex flex-col gap-4 hover:translate-y-[-4px] transition-transform border border-white/50 group relative">
       <div className="h-32 w-full rounded-xl overflow-hidden relative bg-white/40 flex items-center justify-center">
-        {/* Placeholder if no image */}
-        <span className="material-symbols-outlined text-5xl text-primary/30">{icon}</span>
+        {/* Real ingredient photo or simple emoji */}
+        {simpleView ? (
+          <span className="text-6xl">{getCategoryEmoji(item.category)}</span>
+        ) : (
+          <img 
+            src={getIngredientImage(item.name, item.category)} 
+            alt={item.name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = CATEGORY_FALLBACKS[item.category] || CATEGORY_FALLBACKS.Other;
+            }}
+          />
+        )}
         {statusBadge}
         {/* Action overlay on hover */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
@@ -321,7 +352,7 @@ const PantryItemCard = ({ item, onEdit, onDelete }) => {
           <h3 className="font-headline-md text-label-md text-on-surface truncate pr-2" title={item.name}>{item.name}</h3>
           <p className="text-label-sm text-outline">{item.category}</p>
         </div>
-        <span className="material-symbols-outlined text-primary/60 shrink-0">{icon}</span>
+        {simpleView && <span className="text-2xl shrink-0">{getCategoryEmoji(item.category)}</span>}
       </div>
       
       <div className="flex justify-between items-center mt-auto">

@@ -57,6 +57,8 @@ temp/
 # .MD files
 *.md
 !README.md
+!LICENSE.md
+!LICENSE
 
 stitch_dashboard.html
 stitch_pantry.html
