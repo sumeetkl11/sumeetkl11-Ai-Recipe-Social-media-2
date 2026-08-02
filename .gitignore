@@ -59,6 +59,7 @@ temp/
 !README.md
 !LICENSE.md
 !LICENSE
+.md-files/
 
 stitch_dashboard.html
 stitch_pantry.html
