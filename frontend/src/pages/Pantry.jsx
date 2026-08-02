@@ -72,6 +72,25 @@ const Pantry = () => {
     setFilteredItems(result);
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+
+    try {
+      await api.delete(`/pantry/${id}`);
+      const updatedItems = items.filter(item => item.id !== id);
+      setItems(updatedItems);
+      setFilteredItems(updatedItems.filter(item => {
+        const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      }));
+      toast.success('Item deleted successfully');
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error(error.response?.data?.message || 'Error deleting item');
+    }
+  };
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -159,6 +178,7 @@ const Pantry = () => {
                     key={item.id} 
                     item={item} 
                     onEdit={() => setEditingItem(item)}
+                    onDelete={() => handleDelete(item.id)}
                   />
                 ))}
               </div>
@@ -256,7 +276,7 @@ const Pantry = () => {
   );
 };
 
-const PantryItemCard = ({ item, onEdit }) => {
+const PantryItemCard = ({ item, onEdit, onDelete }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -305,6 +325,15 @@ const PantryItemCard = ({ item, onEdit }) => {
             className="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">edit</span>
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }} 
+            className="w-8 h-8 rounded-full bg-white text-error flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">delete</span>
           </button>
         </div>
       </div>

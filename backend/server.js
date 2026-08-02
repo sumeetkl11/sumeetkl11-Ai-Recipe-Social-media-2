@@ -167,9 +167,21 @@ app.use(errorHandler);
 
 // Start HTTP server (includes Express and Socket.io)
 initDB().then(() => {
-    httpServer.listen(PORT, '0.0.0.0', () => {
+    const server = httpServer.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`📡 Socket.io enabled`);
         console.log(`🔗 WebSocket URL: ws://localhost:${PORT}`);
+    });
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.warn(`[Server] Port ${PORT} in use, retrying in 1.5s...`);
+            setTimeout(() => {
+                server.close();
+                httpServer.listen(PORT, '0.0.0.0');
+            }, 1500);
+        } else {
+            console.error('[Server] Server error:', err);
+        }
     });
 });

@@ -92,7 +92,15 @@ export const initDB = async () => {
         await pool.query(
             `ALTER TABLE posts ALTER COLUMN recipe_id DROP NOT NULL`
         );
-        console.log('[DB] ✅ Posts table updated');
+        await pool.query(`
+            ALTER TABLE posts
+            ADD COLUMN IF NOT EXISTS like_count INT DEFAULT 0,
+            ADD COLUMN IF NOT EXISTS comment_count INT DEFAULT 0
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_likes_post_user ON likes(post_id, user_id)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_follows_follower_followee ON follows(follower_id, followee_id)`);
+        console.log('[DB] ✅ Posts table and indexes updated');
         
         console.log('[DB] Altering conversations table...');
         await pool.query(`

@@ -165,7 +165,6 @@ class Post {
   static async getFeed(userId, limit = 10, offset = 0) {
     try {
       const schema = await Post.getSchemaConfig();
-      const followSchema = await Follow.getSchemaConfig();
       const contentSelect = schema.hasPostCaption
         ? 'p.caption AS caption'
         : schema.hasPostContent
@@ -184,6 +183,17 @@ class Post {
         ? 'COALESCE(p.comment_count, 0) AS comment_count'
         : '(SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count';
 
+      // Try to get follow schema, but provide a safe fallback
+      let followingColumn = 'followee_id'; // Default from schema.sql
+      try {
+        const followSchema = await Follow.getSchemaConfig();
+        if (followSchema && followSchema.followingColumn) {
+          followingColumn = followSchema.followingColumn;
+        }
+      } catch (followError) {
+        console.warn('[Post.getFeed] Could not load follow schema, using default:', followError.message);
+      }
+
       const result = await pool.query(
         `SELECT
           p.id,
@@ -199,8 +209,8 @@ class Post {
           r.name AS recipe_name,
           r.description AS recipe_description,
           r.image_url AS recipe_image_url,
-          (SELECT EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1)) AS is_liked,
-          (SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1 AND ${followSchema.followingColumn} = p.user_id)) AS is_following_author
+          CASE WHEN $1 IS NOT NULL THEN (SELECT EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1)) ELSE false END AS is_liked,
+          CASE WHEN $1 IS NOT NULL THEN (SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1 AND ${followingColumn} = p.user_id)) ELSE false END AS is_following_author
          FROM posts p
          JOIN users u ON p.user_id = u.id
          LEFT JOIN recipes r ON p.recipe_id = r.id

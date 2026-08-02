@@ -1,8 +1,9 @@
 // Comprehensive Marketplace Product Catalog
-// Uses getIngredientImage() for consistent imagery with pantry
+// Connected to local images in src/assets/images/pantry-images
+// Products without local images have been removed as requested
 
 export const MARKETPLACE_PRODUCTS = [
-  // ==================== VEGETABLES (35 items) ====================
+  // ==================== VEGETABLES ====================
   { id: 1, name: "Tomato", category: "Vegetables", price: 80, originalPrice: 100, discount: "20%", unit: "kg", expiryDate: "2026-08-09", inStock: true, seller: "Fresh Farm Co.", rating: 4.5, reviews: 234 },
   { id: 2, name: "Onion", category: "Vegetables", price: 50, originalPrice: 50, discount: null, unit: "kg", expiryDate: "2026-08-20", inStock: true, seller: "Local Farmers", rating: 4.3, reviews: 189 },
   { id: 3, name: "Potato", category: "Vegetables", price: 40, originalPrice: 50, discount: "20%", unit: "kg", expiryDate: "2026-08-25", inStock: true, seller: "Fresh Farm Co.", rating: 4.6, reviews: 312 },
@@ -12,7 +13,6 @@ export const MARKETPLACE_PRODUCTS = [
   { id: 7, name: "Broccoli", category: "Vegetables", price: 120, originalPrice: 150, discount: "20%", unit: "kg", expiryDate: "2026-08-10", inStock: true, seller: "Organic Valley", rating: 4.5, reviews: 143 },
   { id: 8, name: "Spinach", category: "Vegetables", price: 90, originalPrice: 100, discount: "10%", unit: "bunch", expiryDate: "2026-08-07", inStock: true, seller: "Green Gardens", rating: 4.6, reviews: 178 },
   { id: 9, name: "Cabbage", category: "Vegetables", price: 55, originalPrice: 55, discount: null, unit: "piece", expiryDate: "2026-08-18", inStock: true, seller: "Local Farmers", rating: 4.3, reviews: 87 },
-  { id: 10, name: "Cauliflower", category: "Vegetables", price: 80, originalPrice: 100, discount: "20%", unit: "piece", expiryDate: "2026-08-13", inStock: true, seller: "Fresh Farm Co.", rating: 4.4, reviews: 165 },
   { id: 11, name: "Garlic", category: "Vegetables", price: 150, originalPrice: 150, discount: null, unit: "kg", expiryDate: "2026-09-15", inStock: true, seller: "Spice Market", rating: 4.8, reviews: 289 },
   { id: 12, name: "Mushroom", category: "Vegetables", price: 180, originalPrice: 200, discount: "10%", unit: "pack", expiryDate: "2026-08-09", inStock: true, seller: "Organic Valley", rating: 4.5, reviews: 134 },
   { id: 13, name: "Zucchini", category: "Vegetables", price: 95, originalPrice: 110, discount: "13%", unit: "kg", expiryDate: "2026-08-11", inStock: true, seller: "Green Gardens", rating: 4.3, reviews: 76 },
@@ -23,78 +23,44 @@ export const MARKETPLACE_PRODUCTS = [
   { id: 18, name: "Peas", category: "Vegetables", price: 95, originalPrice: 110, discount: "13%", unit: "kg", expiryDate: "2026-08-11", inStock: true, seller: "Green Gardens", rating: 4.5, reviews: 112 },
   { id: 19, name: "Corn", category: "Vegetables", price: 75, originalPrice: 75, discount: null, unit: "pack", expiryDate: "2026-08-13", inStock: true, seller: "Fresh Farm Co.", rating: 4.4, reviews: 128 },
 
-  // ==================== FRUITS (25 items) ====================
-  { id: 100, name: "Apple", category: "Fruits", price: 180, originalPrice: 200, discount: "10%", unit: "kg", expiryDate: "2026-08-20", inStock: true, seller: "Fruit Paradise", rating: 4.7, reviews: 456 },
-  { id: 101, name: "Banana", category: "Fruits", price: 60, originalPrice: 60, discount: null, unit: "dozen", expiryDate: "2026-08-10", inStock: true, seller: "Tropical Harvest", rating: 4.6, reviews: 389 },
-  { id: 102, name: "Orange", category: "Fruits", price: 120, originalPrice: 140, discount: "15%", unit: "kg", expiryDate: "2026-08-18", inStock: true, seller: "Citrus Grove", rating: 4.5, reviews: 267 },
-  { id: 103, name: "Mango", category: "Fruits", price: 200, originalPrice: 250, discount: "20%", unit: "kg", expiryDate: "2026-08-12", inStock: true, seller: "Tropical Harvest", rating: 4.9, reviews: 512 },
-  { id: 104, name: "Strawberry", category: "Fruits", price: 280, originalPrice: 320, discount: "12%", unit: "pack", expiryDate: "2026-08-08", inStock: true, seller: "Berry Fresh", rating: 4.8, reviews: 234 },
-  { id: 105, name: "Grapes", category: "Fruits", price: 150, originalPrice: 180, discount: "15%", unit: "kg", expiryDate: "2026-08-14", inStock: true, seller: "Fruit Paradise", rating: 4.6, reviews: 198 },
-  { id: 106, name: "Watermelon", category: "Fruits", price: 40, originalPrice: 50, discount: "20%", unit: "kg", expiryDate: "2026-08-16", inStock: true, seller: "Summer Farms", rating: 4.5, reviews: 312 },
+  // ==================== FRUITS ====================
   { id: 107, name: "Pineapple", category: "Fruits", price: 80, originalPrice: 80, discount: null, unit: "piece", expiryDate: "2026-08-15", inStock: true, seller: "Tropical Harvest", rating: 4.7, reviews: 156 },
   { id: 108, name: "Lemon", category: "Fruits", price: 70, originalPrice: 70, discount: null, unit: "kg", expiryDate: "2026-08-25", inStock: true, seller: "Citrus Grove", rating: 4.4, reviews: 178 },
-  { id: 109, name: "Lime", category: "Fruits", price: 75, originalPrice: 90, discount: "15%", unit: "kg", expiryDate: "2026-08-22", inStock: true, seller: "Citrus Grove", rating: 4.3, reviews: 134 },
-  { id: 110, name: "Avocado", category: "Fruits", price: 250, originalPrice: 300, discount: "15%", unit: "kg", expiryDate: "2026-08-10", inStock: true, seller: "Exotic Imports", rating: 4.8, reviews: 289 },
-  { id: 111, name: "Blueberry", category: "Fruits", price: 350, originalPrice: 400, discount: "12%", unit: "pack", expiryDate: "2026-08-07", inStock: true, seller: "Berry Fresh", rating: 4.9, reviews: 201 },
   { id: 112, name: "Pomegranate", category: "Fruits", price: 180, originalPrice: 200, discount: "10%", unit: "kg", expiryDate: "2026-08-20", inStock: true, seller: "Fruit Paradise", rating: 4.6, reviews: 167 },
 
-  // ==================== PROTEINS (20 items) ====================
-  { id: 200, name: "Chicken Breast", category: "Proteins", price: 280, originalPrice: 320, discount: "12%", unit: "kg", expiryDate: "2026-08-05", inStock: true, seller: "Fresh Meat Co.", rating: 4.7, reviews: 456 },
-  { id: 201, name: "Chicken", category: "Proteins", price: 220, originalPrice: 250, discount: "12%", unit: "kg", expiryDate: "2026-08-05", inStock: true, seller: "Fresh Meat Co.", rating: 4.6, reviews: 389 },
-  { id: 202, name: "Eggs", category: "Proteins", price: 80, originalPrice: 90, discount: "10%", unit: "dozen", expiryDate: "2026-08-18", inStock: true, seller: "Farm Fresh", rating: 4.8, reviews: 612 },
-  { id: 203, name: "Fish", category: "Proteins", price: 350, originalPrice: 400, discount: "12%", unit: "kg", expiryDate: "2026-08-04", inStock: true, seller: "Ocean Catch", rating: 4.5, reviews: 234 },
-  { id: 204, name: "Salmon", category: "Proteins", price: 450, originalPrice: 500, discount: "10%", unit: "kg", expiryDate: "2026-08-04", inStock: true, seller: "Ocean Catch", rating: 4.9, reviews: 178 },
+  // ==================== PROTEINS ====================
   { id: 205, name: "Shrimp", category: "Proteins", price: 480, originalPrice: 550, discount: "12%", unit: "kg", expiryDate: "2026-08-04", inStock: true, seller: "Ocean Catch", rating: 4.7, reviews: 156 },
-  { id: 206, name: "Tofu", category: "Proteins", price: 120, originalPrice: 120, discount: null, unit: "pack", expiryDate: "2026-08-20", inStock: true, seller: "Vegan Delight", rating: 4.6, reviews: 289 },
   { id: 207, name: "Beef", category: "Proteins", price: 420, originalPrice: 480, discount: "12%", unit: "kg", expiryDate: "2026-08-05", inStock: true, seller: "Fresh Meat Co.", rating: 4.6, reviews: 312 },
   { id: 208, name: "Pork", category: "Proteins", price: 350, originalPrice: 400, discount: "12%", unit: "kg", expiryDate: "2026-08-05", inStock: true, seller: "Fresh Meat Co.", rating: 4.5, reviews: 198 },
   { id: 209, name: "Turkey", category: "Proteins", price: 380, originalPrice: 420, discount: "10%", unit: "kg", expiryDate: "2026-08-06", inStock: true, seller: "Fresh Meat Co.", rating: 4.7, reviews: 145 },
   { id: 210, name: "Bacon", category: "Proteins", price: 320, originalPrice: 360, discount: "11%", unit: "pack", expiryDate: "2026-08-15", inStock: true, seller: "Fresh Meat Co.", rating: 4.8, reviews: 267 },
 
-  // ==================== DAIRY (15 items) ====================
+  // ==================== DAIRY ====================
   { id: 300, name: "Milk", category: "Dairy", price: 60, originalPrice: 60, discount: null, unit: "liter", expiryDate: "2026-08-08", inStock: true, seller: "Dairy Fresh", rating: 4.7, reviews: 534 },
-  { id: 301, name: "Cheese", category: "Dairy", price: 180, originalPrice: 200, discount: "10%", unit: "pack", expiryDate: "2026-08-25", inStock: true, seller: "Cheese Factory", rating: 4.8, reviews: 312 },
   { id: 302, name: "Yogurt", category: "Dairy", price: 50, originalPrice: 60, discount: "15%", unit: "pack", expiryDate: "2026-08-12", inStock: true, seller: "Dairy Fresh", rating: 4.6, reviews: 289 },
-  { id: 303, name: "Butter", category: "Dairy", price: 120, originalPrice: 140, discount: "15%", unit: "pack", expiryDate: "2026-08-30", inStock: true, seller: "Dairy Fresh", rating: 4.7, reviews: 245 },
   { id: 304, name: "Cream", category: "Dairy", price: 85, originalPrice: 100, discount: "15%", unit: "pack", expiryDate: "2026-08-10", inStock: true, seller: "Dairy Fresh", rating: 4.5, reviews: 167 },
   { id: 305, name: "Cheddar", category: "Dairy", price: 220, originalPrice: 250, discount: "12%", unit: "pack", expiryDate: "2026-08-28", inStock: true, seller: "Cheese Factory", rating: 4.8, reviews: 198 },
-  { id: 306, name: "Mozzarella", category: "Dairy", price: 200, originalPrice: 230, discount: "13%", unit: "pack", expiryDate: "2026-08-26", inStock: true, seller: "Cheese Factory", rating: 4.7, reviews: 234 },
-  { id: 307, name: "Parmesan", category: "Dairy", price: 280, originalPrice: 320, discount: "12%", unit: "pack", expiryDate: "2026-09-10", inStock: true, seller: "Cheese Factory", rating: 4.9, reviews: 289 },
   { id: 308, name: "Sour Cream", category: "Dairy", price: 95, originalPrice: 110, discount: "13%", unit: "pack", expiryDate: "2026-08-15", inStock: true, seller: "Dairy Fresh", rating: 4.4, reviews: 134 },
   { id: 309, name: "Heavy Cream", category: "Dairy", price: 110, originalPrice: 130, discount: "15%", unit: "pack", expiryDate: "2026-08-12", inStock: true, seller: "Dairy Fresh", rating: 4.6, reviews: 156 },
 
-  // ==================== GRAINS (15 items) ====================
-  { id: 400, name: "Rice", category: "Grains", price: 60, originalPrice: 70, discount: "15%", unit: "kg", expiryDate: "2027-02-01", inStock: true, seller: "Grain Depot", rating: 4.6, reviews: 678 },
-  { id: 401, name: "Pasta", category: "Grains", price: 80, originalPrice: 95, discount: "15%", unit: "pack", expiryDate: "2027-01-15", inStock: true, seller: "Italian Imports", rating: 4.7, reviews: 456 },
-  { id: 402, name: "Bread", category: "Grains", price: 45, originalPrice: 50, discount: "10%", unit: "loaf", expiryDate: "2026-08-06", inStock: true, seller: "Baker's Delight", rating: 4.5, reviews: 312 },
+  // ==================== GRAINS ====================
   { id: 403, name: "Flour", category: "Grains", price: 50, originalPrice: 50, discount: null, unit: "kg", expiryDate: "2026-12-31", inStock: true, seller: "Grain Depot", rating: 4.6, reviews: 534 },
-  { id: 404, name: "Oats", category: "Grains", price: 120, originalPrice: 140, discount: "15%", unit: "kg", expiryDate: "2027-03-15", inStock: true, seller: "Health Store", rating: 4.8, reviews: 389 },
   { id: 405, name: "Quinoa", category: "Grains", price: 280, originalPrice: 320, discount: "12%", unit: "kg", expiryDate: "2027-04-20", inStock: true, seller: "Health Store", rating: 4.7, reviews: 234 },
   { id: 406, name: "Couscous", category: "Grains", price: 180, originalPrice: 200, discount: "10%", unit: "pack", expiryDate: "2027-02-28", inStock: true, seller: "Grain Depot", rating: 4.5, reviews: 167 },
   { id: 407, name: "Cereal", category: "Grains", price: 150, originalPrice: 180, discount: "15%", unit: "box", expiryDate: "2026-12-31", inStock: true, seller: "Health Store", rating: 4.6, reviews: 289 },
   { id: 408, name: "Noodles", category: "Grains", price: 70, originalPrice: 80, discount: "12%", unit: "pack", expiryDate: "2027-01-31", inStock: true, seller: "Asian Market", rating: 4.5, reviews: 312 },
 
-  // ==================== SPICES (25 items) ====================
-  { id: 500, name: "Salt", category: "Spices", price: 20, originalPrice: 20, discount: null, unit: "kg", expiryDate: "2028-12-31", inStock: true, seller: "Spice Bazaar", rating: 4.5, reviews: 456 },
-  { id: 501, name: "Pepper", category: "Spices", price: 250, originalPrice: 280, discount: "10%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Spice Bazaar", rating: 4.7, reviews: 389 },
+  // ==================== SPICES ====================
   { id: 502, name: "Olive Oil", category: "Spices", price: 320, originalPrice: 380, discount: "15%", unit: "bottle", expiryDate: "2027-06-30", inStock: true, seller: "Gourmet Oils", rating: 4.9, reviews: 512 },
-  { id: 503, name: "Vinegar", category: "Spices", price: 85, originalPrice: 100, discount: "15%", unit: "bottle", expiryDate: "2027-08-31", inStock: true, seller: "Condiment Co.", rating: 4.4, reviews: 234 },
   { id: 504, name: "Soy Sauce", category: "Spices", price: 95, originalPrice: 110, discount: "13%", unit: "bottle", expiryDate: "2027-10-31", inStock: true, seller: "Asian Market", rating: 4.6, reviews: 312 },
-  { id: 505, name: "Honey", category: "Spices", price: 280, originalPrice: 320, discount: "12%", unit: "jar", expiryDate: "2028-12-31", inStock: true, seller: "Sweet Harvest", rating: 4.8, reviews: 456 },
   { id: 506, name: "Sugar", category: "Spices", price: 45, originalPrice: 50, discount: "10%", unit: "kg", expiryDate: "2027-12-31", inStock: true, seller: "Sweet Supplies", rating: 4.5, reviews: 389 },
-  { id: 507, name: "Cinnamon", category: "Spices", price: 180, originalPrice: 200, discount: "10%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Spice Bazaar", rating: 4.7, reviews: 267 },
-  { id: 508, name: "Paprika", category: "Spices", price: 150, originalPrice: 180, discount: "15%", unit: "pack", expiryDate: "2027-11-30", inStock: true, seller: "Spice Bazaar", rating: 4.6, reviews: 198 },
-  { id: 509, name: "Cumin", category: "Spices", price: 140, originalPrice: 160, discount: "12%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Spice Bazaar", rating: 4.6, reviews: 223 },
   { id: 510, name: "Oregano", category: "Spices", price: 120, originalPrice: 140, discount: "15%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Herb Garden", rating: 4.5, reviews: 178 },
   { id: 511, name: "Basil", category: "Spices", price: 95, originalPrice: 110, discount: "13%", unit: "pack", expiryDate: "2026-08-20", inStock: true, seller: "Herb Garden", rating: 4.7, reviews: 201 },
   { id: 512, name: "Parsley", category: "Spices", price: 85, originalPrice: 100, discount: "15%", unit: "bunch", expiryDate: "2026-08-15", inStock: true, seller: "Herb Garden", rating: 4.4, reviews: 156 },
   { id: 513, name: "Thyme", category: "Spices", price: 110, originalPrice: 130, discount: "15%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Herb Garden", rating: 4.6, reviews: 189 },
-  { id: 514, name: "Rosemary", category: "Spices", price: 120, originalPrice: 140, discount: "15%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Herb Garden", rating: 4.7, reviews: 212 },
-  { id: 515, name: "Ginger", category: "Spices", price: 160, originalPrice: 180, discount: "11%", unit: "kg", expiryDate: "2026-08-25", inStock: true, seller: "Spice Bazaar", rating: 4.8, reviews: 289 },
-  { id: 516, name: "Turmeric", category: "Spices", price: 140, originalPrice: 160, discount: "12%", unit: "pack", expiryDate: "2027-12-31", inStock: true, seller: "Spice Bazaar", rating: 4.7, reviews: 267 },
 ];
 
-// Category statistics
+// Category statistics calculated dynamically
 export const MARKETPLACE_CATEGORIES = [
   { id: 'all', name: 'All Items', count: MARKETPLACE_PRODUCTS.length },
   { id: 'Vegetables', name: 'Vegetables', count: MARKETPLACE_PRODUCTS.filter(p => p.category === 'Vegetables').length },
