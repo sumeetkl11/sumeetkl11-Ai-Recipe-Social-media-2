@@ -4,7 +4,7 @@
 [![Vite](https://img.shields.io/badge/Bundler-Vite_7-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js_Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Google Gemini AI](https://img.shields.io/badge/AI-Google_Gemini-8E44AD?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Groq AI](https://img.shields.io/badge/AI_Engine-Groq_Llama_3.3_70B-f59e0b?logo=groq&logoColor=white)](https://groq.com/)
 [![Socket.io](https://img.shields.io/badge/RealTime-Socket.io-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -14,9 +14,10 @@
 
 ## 🌟 Key Features
 
-### 🤖 AI Recipe Generator & Personalization
-- **Smart Generation**: Powered by the **Google Gemini API**, generate tailored recipes based on available pantry items, dietary restrictions, and cuisine preferences.
+### 🤖 AI Recipe Generator & Smart Suggestions
+- **Groq AI Engine**: Powered by **Groq (`llama-3.3-70b-versatile`)**, generate ultra-fast tailored recipes based on pantry items, dietary restrictions, and cooking time preferences.
 - **Dynamic Adjustments**: Calculate exact ingredient quantities based on customizable serving sizes.
+- **AI Dish Visuals**: Dynamic high-quality recipe image generation powered by Pollinations AI.
 
 ### 🍱 Interactive Real-Time Meal Planner
 - **Weekly Overview**: Visually schedule meals for Breakfast, Lunch, and Dinner across any week.
@@ -28,9 +29,9 @@
 - **Low Stock & Expiry Alerts**: Visual badges for items nearing expiration or running low.
 - **Automated Shopping Sync**: Missing or low pantry ingredients can be moved straight to your shopping list.
 
-### 🛒 Smart Shopping List
+### 🛒 Smart Shopping List & Marketplace
 - **Automated Aggregation**: Collect ingredients directly from your recipes or weekly meal plans.
-- **Interactive Checklists**: Mark items as purchased and keep your kitchen organized.
+- **Marketplace Hub**: Buy, sell, or trade fresh ingredients with community members.
 
 ### 💬 Social Community & Feed
 - **Share & Explore**: Post culinary creations, photos, and links to your custom recipes.
@@ -57,7 +58,7 @@
 | **State & Notifications**| React Context API, `react-hot-toast` |
 | **Backend Runtime** | Node.js (ES Modules), Express.js |
 | **Database** | PostgreSQL (`pg` connection pool) |
-| **AI Integration** | `@google/genai` (Google Gemini AI SDK) |
+| **AI Engine & Images** | Groq API (`llama-3.3-70b-versatile`), Pollinations AI |
 | **Real-Time Networking**| Socket.io (WebSockets with cookie/JWT authentication) |
 | **Authentication** | JWT (JSON Web Tokens), `bcryptjs` password hashing |
 
@@ -76,7 +77,7 @@ Tastebuds-main/
 │   ├── models/               # Database query wrappers (Recipe, Pantry, MealPlan, Social)
 │   ├── routes/               # API route definitions (/api/...)
 │   ├── sockets/              # Socket.io connection handlers & event rooms
-│   ├── utils/                # Gemini AI helper integration, Logger
+│   ├── utils/                # Groq AI helper integration (groqChat, generateRecipe), Logger
 │   ├── migrate.js            # Database schema migration script
 │   └── server.js             # Express app & Socket.io server entry point
 │
@@ -107,7 +108,7 @@ Tastebuds-main/
 Ensure you have the following installed locally:
 - **Node.js** (v18.x or higher) & `npm`
 - **PostgreSQL** (v14.x or higher) database instance
-- **Google Gemini API Key** (Obtainable from [Google AI Studio](https://aistudio.google.com/))
+- **Groq API Key** (Obtainable from [Groq Cloud Console](https://console.groq.com/))
 
 ---
 
@@ -150,8 +151,8 @@ cd Tastebuds-main
    # Authentication & Security
    JWT_SECRET=your_super_secret_jwt_key_here
 
-   # Google Gemini AI API Key
-   GEMINI_API_KEY=your_gemini_api_key_here
+   # Groq AI API Key
+   GROQ_API_KEY=your_groq_api_key_here
 
    # CORS Configuration
    CORS_ORIGIN=http://localhost:5173
@@ -205,12 +206,13 @@ cd Tastebuds-main
 | **`/api/auth/login`** | `POST` | Authenticate user and issue JWT |
 | **`/api/auth/me`** | `GET` | Get current logged-in user profile |
 | **`/api/recipes`** | `GET / POST` | Fetch user recipes or create a custom recipe |
-| **`/api/recipes/generate`** | `POST` | Generate AI recipe via Gemini engine |
+| **`/api/recipes/generate`** | `POST` | Generate AI recipe via Groq AI engine |
 | **`/api/pantry`** | `GET / POST` | Retrieve or add pantry items |
 | **`/api/meal-plans/weekly`** | `GET` | Retrieve week's planned meals |
 | **`/api/meal-plans`** | `POST / DELETE`| Add or delete planned meals |
 | **`/api/posts`** | `GET / POST` | Fetch community feed or publish a new post |
 | **`/api/messages`** | `GET / POST` | Retrieve conversation threads or send message |
+| **`/api/marketplace`** | `GET / POST` | List or browse marketplace ingredients |
 
 ---
 

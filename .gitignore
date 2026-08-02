@@ -56,6 +56,7 @@ temp/
 
 # .MD files
 *.md
+!README.md
 
 stitch_dashboard.html
 stitch_pantry.html
