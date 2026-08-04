@@ -18,31 +18,29 @@ export const getFeedPosts = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const userId = req.user?.id;
 
+    let posts = [];
+    let total = 0;
 
-    // Cache-aside pattern for feed
-    const cacheKey = cache.CACHE_KEYS.FEED(userId || 'public', page, limit);
-    
-    const result = await cache.getOrSet(
-      cacheKey,
-      async () => {
-        const posts = await Post.getFeed(userId, limit, offset);
-        const totalResult = await pool.query(`SELECT COUNT(*) as count FROM posts`);
-        const total = parseInt(totalResult.rows[0].count, 10);
-        
-        return { posts, total };
-      },
-      cache.TTL_CONFIG.FEED
-    );
+    try {
+      posts = await Post.getFeed(userId, limit, offset);
+      const totalResult = await pool.query(`SELECT COUNT(*) as count FROM posts`);
+      total = parseInt(totalResult.rows[0]?.count || 0, 10);
+    } catch (dbError) {
+      console.warn('[Feed Posts] Direct fetch failed, returning empty set:', dbError.message);
+    }
 
-    const totalPages = Math.ceil(result.total / limit);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     res.json({
       success: true,
-      data: result.posts,
-      pagination: { page, limit, total: result.total, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 }
+      data: posts,
+      pagination: { page, limit, total, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 }
     });
   } catch (error) {
     console.error('Error fetching feed posts:', error);
-    next(error instanceof ApiError ? error : ApiError.internal(error.message || 'Failed to fetch posts'));
+    res.status(500).json({
+      success: false,
+      message: error?.message || 'Failed to fetch posts'
+    });
   }
 };
 
@@ -158,7 +156,11 @@ export const deletePost = async (req, res, next) => {
 
     req.io?.emit('feed:post_deleted', { postId: id });
 
-    res.json(successResponse({ id }, 'Post deleted successfully'));
+    res.json({
+      success: true,
+      message: 'Post deleted successfully',
+      data: { id }
+    });
   } catch (error) {
     console.error('Error deleting post:', error);
     next(error instanceof ApiError ? error : ApiError.internal('Failed to delete post'));

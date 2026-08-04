@@ -307,7 +307,6 @@ export const getAllRecipes = async (req, res, next) => {
 export const getRecentRecipes = async (req, res, next) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
-        await ensureDefaultRecipesForUser(req.user.id);
         const recipes = await Recipe.getRecent(req.user.id, limit);
     
         res.json({

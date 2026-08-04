@@ -26,7 +26,6 @@ const Dashboard = () => {
       }
 
       const results = await Promise.allSettled([
-        api.get('/recipes'),
         api.get('/pantry/stats'),
         api.get('/meal-plans/stats'),
         api.get('/recipes/recent?limit=5'),
@@ -34,20 +33,20 @@ const Dashboard = () => {
         api.get('/posts?limit=20&page=1')
       ]);
 
-      const [recipesRes, pantryRes, mealsRes, recentRes, upcomingRes, postsRes] = results;
+      const [pantryRes, mealsRes, recentRes, upcomingRes, postsRes] = results;
 
       const failedCount = results.filter((r) => r.status === 'rejected').length;
       if (failedCount > 0) {
         toast.error(`${failedCount} dashboard section(s) failed to load — showing available data`);
       }
 
-      if (recipesRes.status === 'fulfilled' || pantryRes.status === 'fulfilled' || mealsRes.status === 'fulfilled') {
-        const recipesData = recipesRes.status === 'fulfilled' ? recipesRes.value.data?.data : null;
+      if (pantryRes.status === 'fulfilled' || mealsRes.status === 'fulfilled' || recentRes.status === 'fulfilled') {
         const pantryData = pantryRes.status === 'fulfilled' ? pantryRes.value.data?.data : null;
         const mealsData = mealsRes.status === 'fulfilled' ? mealsRes.value.data?.data : null;
+        const recentData = recentRes.status === 'fulfilled' ? recentRes.value.data?.data : null;
 
         setStats((prev) => ({
-          totalRecipes: recipesData?.stats?.total_recipes || recipesData?.recipes?.length || prev.totalRecipes,
+          totalRecipes: recentData?.recipes?.length || prev.totalRecipes,
           pantryItems: pantryData?.total_items ?? prev.pantryItems,
           mealsThisWeek: mealsData?.stats?.this_week_count ?? prev.mealsThisWeek
         }));
