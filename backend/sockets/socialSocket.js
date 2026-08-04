@@ -154,7 +154,7 @@ export function initializeSocialSocket(io) {
         // Verify user is participant in this conversation
         const result = await pool.query(
           `SELECT id FROM conversations 
-           WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)`,
+           WHERE id = $1 AND (user_one_id = $2 OR user_two_id = $2 OR participant_1_id = $2 OR participant_2_id = $2)`,
           [conversationId, socket.userId]
         );
 
