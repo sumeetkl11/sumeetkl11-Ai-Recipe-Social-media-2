@@ -78,8 +78,8 @@ export default function Navbar() {
         </div>
       </header>
 
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex justify-between items-center px-4 py-2 bg-gray-200/10 text-slate-100 backdrop-blur-2xl border border-white/30 w-[calc(100%-40px)] max-w-2xl rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
-        <NavLink to="/dashboard" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex justify-between items-center px-4 py-1.5 bg-gray-200/10 text-slate-100 backdrop-blur-2xl border border-white/30 w-[calc(100%-40px)] max-w-2xl rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+        <NavLink to="/dashboard" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${isActive ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>dashboard</span>
@@ -88,7 +88,7 @@ export default function Navbar() {
           )}
         </NavLink>
 
-        <NavLink to="/generate" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
+        <NavLink to="/generate" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${isActive ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>auto_awesome</span>
@@ -97,7 +97,7 @@ export default function Navbar() {
           )}
         </NavLink>
 
-        <NavLink to="/recipes" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
+        <NavLink to="/recipes" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>restaurant_menu</span>
@@ -108,7 +108,7 @@ export default function Navbar() {
 
         <NavLink to="/pantry" className={({isActive}) => {
           const active = isActive || location.pathname === '/marketplace';
-          return `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${active ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`;
+          return `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${active ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`;
         }}>
           {({isActive}) => {
             const active = isActive || location.pathname === '/marketplace';
@@ -121,7 +121,7 @@ export default function Navbar() {
           }}
         </NavLink>
 
-        <NavLink to="/social" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
+        <NavLink to="/social" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>group</span>
@@ -130,7 +130,7 @@ export default function Navbar() {
           )}
         </NavLink>
         
-        <NavLink to="/meal-plan" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
+        <NavLink to="/meal-plan" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-1.5 transition-all duration-[180ms] ease-out ${isActive ? 'bg-primary text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>calendar_month</span>
