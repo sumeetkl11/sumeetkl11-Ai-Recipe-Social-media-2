@@ -221,9 +221,12 @@ const RecipeGenerator = () => {
               <div className="cc-glass-panel p-6 rounded-3xl overflow-hidden relative border border-primary/10">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <span className="material-symbols-outlined text-primary text-4xl animate-bounce">cooking</span>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary animate-ping"></div>
+                    <div className="relative inline-flex items-center justify-center p-2 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                      <span className="material-symbols-outlined text-amber-500 text-3xl animate-bounce" style={{ fontVariationSettings: "'FILL' 1" }}>cooking</span>
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                      </span>
                     </div>
                     <h2 className="font-headline-md text-headline-md">Your recipe is being crafted...</h2>
                   </div>
@@ -271,11 +274,17 @@ const RecipeGenerator = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  {generatedRecipe.image_url && (
-                    <div className="w-full h-48 rounded-2xl overflow-hidden bg-white/40">
-                      <img src={generatedRecipe.image_url} alt={generatedRecipe.name} className="w-full h-full object-cover" />
-                    </div>
-                  )}
+                  <div className="w-full h-48 rounded-2xl overflow-hidden bg-white/40">
+                    <img 
+                      src={generatedRecipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80'} 
+                      alt={generatedRecipe.name} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                  </div>
                   
                   <h3 className="font-display-lg text-3xl md:text-4xl font-bold leading-tight mb-3">{generatedRecipe.name}</h3>
                   <p className="text-body-lg text-on-surface-variant leading-relaxed">{generatedRecipe.description}</p>

@@ -212,6 +212,10 @@ const RecipeCard = ({ recipe, onDelete, isDeleting }) => {
             src={recipe.image_url}
             alt={recipe.name}
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-linear-to-br from-amber-200/30 via-orange-400/20 to-rose-400/15">
