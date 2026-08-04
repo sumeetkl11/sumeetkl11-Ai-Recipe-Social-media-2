@@ -1,4 +1,6 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Automatically ensure /api is appended if user enters base URL without /api
+export const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api`;
 export const SOCKET_URL = API_URL.replace(/\/api\/?$/, '');
 
 export function buildApiUrl(path = '') {
