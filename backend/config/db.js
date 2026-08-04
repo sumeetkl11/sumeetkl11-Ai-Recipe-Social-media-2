@@ -21,8 +21,11 @@ const poolConfig = {
 };
 
 if (connectionString) {
-    poolConfig.connectionString = connectionString;
-    if (process.env.NODE_ENV === 'production' || connectionString.includes('sslmode=require') || connectionString.includes('neon.tech')) {
+    // Silence Node.js pg v8 SSL deprecation warning by replacing sslmode=require with uselibpqcompat
+    poolConfig.connectionString = connectionString.includes('sslmode=require') 
+        ? connectionString.replace('sslmode=require', 'uselibpqcompat=true&sslmode=require')
+        : connectionString;
+    if (process.env.NODE_ENV === 'production' || connectionString.includes('sslmode=') || connectionString.includes('neon.tech')) {
         poolConfig.ssl = { rejectUnauthorized: false };
     }
 } else {
