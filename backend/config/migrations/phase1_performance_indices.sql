@@ -19,7 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
 
 -- Follows table indices
 CREATE INDEX IF NOT EXISTS idx_follows_follower_id ON follows(follower_id);
-CREATE INDEX IF NOT EXISTS idx_follows_following_id ON follows(following_id);
+CREATE INDEX IF NOT EXISTS idx_follows_followee_id ON follows(followee_id);
 
 -- Notifications table indices
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);

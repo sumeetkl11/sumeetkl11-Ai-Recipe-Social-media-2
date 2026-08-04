@@ -13,14 +13,18 @@ class Follow {
       `SELECT column_name
        FROM information_schema.columns
        WHERE table_schema = 'public'
-         AND table_name = 'follows'
-         AND column_name IN ('following_id', 'followee_id')`
+       AND table_name = 'follows'
+       AND column_name IN ('following_id', 'followee_id', 'followed_user_id')`
     );
 
     const columns = new Set(result.rows.map((row) => row.column_name));
 
     Follow.schemaCache = {
-      followingColumn: columns.has('following_id') ? 'following_id' : 'followee_id'
+      followingColumn: columns.has('following_id')
+        ? 'following_id'
+        : columns.has('followee_id')
+          ? 'followee_id'
+          : 'followed_user_id'
     };
 
     return Follow.schemaCache;

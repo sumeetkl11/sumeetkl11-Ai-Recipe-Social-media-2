@@ -1,6 +1,8 @@
 // backend/controllers/social/streakController.js
 import Streak from '../../models/social/Streak.js';
 import ActivityFeed from '../../models/social/ActivityFeed.js';
+import Follow from '../../models/social/Follow.js';
+import { pool } from '../../config/db.js';
 import { redisClient } from '../../cache/redis.js';
 
 /**
@@ -121,8 +123,9 @@ export const getActivityFeed = async (req, res) => {
     const offset = (page - 1) * limit;
 
     // Get following user IDs
+    const followSchema = await Follow.getSchemaConfig();
     const followingResult = await pool.query(
-      `SELECT followed_user_id FROM follows WHERE follower_id = $1`,
+      `SELECT ${followSchema.followingColumn} AS following_user_id FROM follows WHERE follower_id = $1`,
       [userId]
     );
 
@@ -134,7 +137,7 @@ export const getActivityFeed = async (req, res) => {
       });
     }
 
-    const followingIds = followingResult.rows.map((row) => row.followed_user_id);
+    const followingIds = followingResult.rows.map((row) => row.following_user_id);
 
     // Get activity from followed users
     const activity = await ActivityFeed.getFollowingActivity(followingIds, limit, offset);
