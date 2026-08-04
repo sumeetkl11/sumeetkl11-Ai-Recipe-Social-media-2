@@ -96,10 +96,10 @@ const redisStore = (prefix) => new ResilientRateLimitStore(prefix);
 
 const userOrIpKeyGenerator = (req) => (req.user?.id ? `user:${req.user.id}` : ipKeyGenerator(req.ip));
 
-// General API rate limit - 300 requests per 15 minutes
+// General API rate limit - 1000 requests per 15 minutes
 export const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300,
+    max: 1000,
     skipSuccessfulRequests: false,
     passOnStoreError: true,
     keyGenerator: userOrIpKeyGenerator,
@@ -109,10 +109,10 @@ export const generalLimiter = rateLimit({
     store: redisStore('rl:general:')
 });
 
-// Dedicated rate limit for AI generation - 20 requests per hour
+// Dedicated rate limit for AI generation - 50 requests per hour
 export const aiLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 20,
+    max: 50,
     passOnStoreError: true,
     keyGenerator: userOrIpKeyGenerator,
     message: { success: false, message: 'AI generation limit reached, please try again in an hour' },
@@ -121,10 +121,10 @@ export const aiLimiter = rateLimit({
     store: redisStore('rl:ai:')
 });
 
-// Strict rate limit for auth endpoints - 5 requests per 15 minutes
+// Auth endpoints rate limit - 30 requests per 15 minutes
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 30,
     skipSuccessfulRequests: true,
     passOnStoreError: true,
     keyGenerator: userOrIpKeyGenerator,
