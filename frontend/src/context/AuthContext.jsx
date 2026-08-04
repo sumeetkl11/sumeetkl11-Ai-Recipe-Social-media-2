@@ -42,7 +42,11 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await api.post('/auth/login', { email, password });
-            const { user } = response.data.data;
+            const { user, token } = response.data.data;
+
+            if (token) {
+                localStorage.setItem('token', token);
+            }
 
             setUser(user);
             
@@ -59,9 +63,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (name, email, password) => {
-       try{
+       try {
             const response = await api.post('/auth/signup', { name, email, password });
-            const { user } = response.data.data;
+            const { user, token } = response.data.data;
+
+            if (token) {
+                localStorage.setItem('token', token);
+            }
             
             setUser(user);
             
@@ -70,7 +78,7 @@ export const AuthProvider = ({ children }) => {
             
             return { success: true };
         
-       }catch(error){
+       } catch (error) {
         return { 
             success: false, 
             error: error.response?.data?.message || 'Registration failed' 
@@ -84,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
+            localStorage.removeItem('token');
             setUser(null);
             
             // Disconnect Socket.io

@@ -28,8 +28,10 @@ async function request(url, options = {}) {
 
     const { params, ...fetchOptions } = options;
 
+    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(fetchOptions.headers || {}),
     };
 

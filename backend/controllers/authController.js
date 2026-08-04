@@ -52,11 +52,12 @@ export const register = async (req, res, next) => {
         // generate token and set httpOnly cookie
         const token = generateToken(user);
         
-        // Set httpOnly cookie
+        // Set httpOnly cookie (resilient for cross-origin Vercel<->Render deployment)
+        const isProduction = process.env.NODE_ENV === 'production' || req.secure || req.headers['x-forwarded-proto'] === 'https';
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
         
@@ -64,6 +65,7 @@ export const register = async (req, res, next) => {
             success: true,
             message: "User registered successfully",
             data: {
+                token,
                 user: {
                     id: user.id,
                     email: user.email,
@@ -114,11 +116,12 @@ export const login = async (req, res, next) => {
         // generate token and set httpOnly cookie
         const token = generateToken(user);
         
-        // Set httpOnly cookie
+        // Set httpOnly cookie (resilient for cross-origin Vercel<->Render deployment)
+        const isProduction = process.env.NODE_ENV === 'production' || req.secure || req.headers['x-forwarded-proto'] === 'https';
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
         
@@ -126,6 +129,7 @@ export const login = async (req, res, next) => {
             success: true,
             message: "User logged in successfully",
             data: {
+                token,
                 user: {
                     id: user.id,
                     email: user.email,
