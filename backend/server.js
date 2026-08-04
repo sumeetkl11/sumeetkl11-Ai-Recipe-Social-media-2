@@ -124,9 +124,10 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Test routes
-app.get('/', (req, res) =>{
-    res.json({message: 'AI RECIPE GENERATOR API'});
+// Test routes & static handlers
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/', (req, res) => {
+    res.json({ message: 'AI RECIPE GENERATOR API' });
 });
 
 // API routes
