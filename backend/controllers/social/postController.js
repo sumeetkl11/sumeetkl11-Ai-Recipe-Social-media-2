@@ -6,7 +6,6 @@ import { pool } from '../../config/db.js';
 import { emitNotification } from '../../sockets/socialSocket.js';
 import cache from '../../services/cacheService.js';
 import ApiError from '../../utils/ApiError.js';
-import { parsePagination } from '../../utils/pagination.js';
 
 /**
  * Get feed posts (paginated)
@@ -14,8 +13,11 @@ import { parsePagination } from '../../utils/pagination.js';
  */
 export const getFeedPosts = async (req, res, next) => {
   try {
-    const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 10, maxLimit: 50 });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, Math.min(50, parseInt(req.query.limit) || 10));
+    const offset = (page - 1) * limit;
     const userId = req.user?.id;
+
 
     // Cache-aside pattern for feed
     const cacheKey = cache.CACHE_KEYS.FEED(userId || 'public', page, limit);

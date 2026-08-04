@@ -1,11 +1,7 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(import.meta.dirname, '../.env') });
 
 import pkg from 'pg';
 const { Pool } = pkg;
@@ -84,7 +80,12 @@ export const initDB = async () => {
             ADD COLUMN IF NOT EXISTS bio TEXT,
             ADD COLUMN IF NOT EXISTS avatar_url TEXT,
             ADD COLUMN IF NOT EXISTS follower_count INT DEFAULT 0,
-            ADD COLUMN IF NOT EXISTS following_count INT DEFAULT 0
+            ADD COLUMN IF NOT EXISTS following_count INT DEFAULT 0,
+            ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE,
+            ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(255),
+            ADD COLUMN IF NOT EXISTS email_verification_expires TIMESTAMPTZ,
+            ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255),
+            ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ
         `);
         console.log('[DB] ✅ Users table updated');
         

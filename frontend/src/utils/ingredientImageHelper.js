@@ -84,9 +84,3 @@ export const getCategoryEmoji = (category) => {
   return emojiMap[category] || '🥫';
 };
 
-/**
- * Clear the image cache (useful for testing or memory management)
- */
-export const clearImageCache = () => {
-  imageCache.clear();
-};

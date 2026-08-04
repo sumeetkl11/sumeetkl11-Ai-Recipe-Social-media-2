@@ -2,8 +2,6 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Home, UtensilsCrossed, Apple, LayoutDashboard } from 'lucide-react';
 import ClickSpark from './ClickSpark';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
 
 export default function DesktopBottomNav() {
   const location = useLocation();

@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import UserPreference from "../models/UserPreference.js";
 import jwt from "jsonwebtoken";
 import { isAdminEmail } from "../middleware/admin.js";
-import { ensureDefaultRecipesForUser } from "../utils/defaultRecipes.js";
+import { ensureDefaultRecipesForUser } from "./recipeController.js";
 
 // Generate JWT token (expects a user object)
 const generateToken = (user) => {

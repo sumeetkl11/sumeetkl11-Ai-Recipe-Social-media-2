@@ -1,6 +1,5 @@
-import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import gsap from 'gsap';
 
 const TARGET_SELECTOR = [
   '.page-hero',
@@ -12,45 +11,29 @@ const TARGET_SELECTOR = [
   '.meal-list-item',
   '.conversation-item',
   '.message'
-  // ponytail: removed .auth-card - forms should prioritize functionality over animations
 ].join(', ');
 
 export default function RouteSceneAnimator() {
   const location = useLocation();
 
-  useLayoutEffect(() => {
-    const targets = gsap.utils.toArray(TARGET_SELECTOR).slice(0, 18);
+  useEffect(() => {
+    const targets = Array.from(document.querySelectorAll(TARGET_SELECTOR)).slice(0, 18);
 
     if (targets.length === 0) {
-      return undefined;
+      return;
     }
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const ctx = gsap.context(() => {
-      gsap.killTweensOf(targets);
-      gsap.set(targets, {
-        opacity: reducedMotion ? 1 : 0,
-        y: reducedMotion ? 0 : 18,
-        scale: reducedMotion ? 1 : 0.985,
-        filter: reducedMotion ? 'none' : 'blur(10px)'
-      });
+    if (reducedMotion) {
+      return;
+    }
 
-      if (!reducedMotion) {
-        gsap.to(targets, {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          filter: 'blur(0px)',
-          duration: 0.86,
-          stagger: 0.05,
-          ease: 'power3.out',
-          overwrite: 'auto',
-          clearProps: 'opacity,transform,filter'
-        });
-      }
+    targets.forEach((el, index) => {
+      el.style.animation = 'none';
+      // Force reflow
+      void el.offsetWidth;
+      el.style.animation = `route-entrance 0.86s cubic-bezier(0.215, 0.61, 0.355, 1) ${index * 0.05}s forwards`;
     });
-
-    return () => ctx.revert();
   }, [location.pathname]);
 
   return null;

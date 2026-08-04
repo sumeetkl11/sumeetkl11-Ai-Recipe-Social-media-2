@@ -140,13 +140,13 @@ cd Tastebuds-main
    PORT=8000
    NODE_ENV=development
    
-   # Database Credentials
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=tastebuds_db
-   DB_USER=postgres
-   DB_PASSWORD=your_postgres_password
-   # Alternatively use DATABASE_URL=postgres://user:password@localhost:5432/tastebuds_db
+   # Database Credentials (use DATABASE_URL or individual PG* vars)
+   DATABASE_URL=postgres://postgres:your_password@localhost:5432/tastebuds
+   # PGHOST=localhost
+   # PGPORT=5432
+   # PGDATABASE=tastebuds
+   # PGUSER=postgres
+   # PGPASSWORD=your_postgres_password
 
    # Authentication & Security
    JWT_SECRET=your_super_secret_jwt_key_here
@@ -154,8 +154,10 @@ cd Tastebuds-main
    # Groq AI API Key
    GROQ_API_KEY=your_groq_api_key_here
 
-   # CORS Configuration
-   CORS_ORIGIN=http://localhost:5173
+   # CORS / Frontend Origin Configuration
+   CLIENT_URL=http://localhost:5173
+   FRONTEND_URL=http://localhost:5173
+   FRONTEND_ORIGIN=http://localhost:5173
    ```
 
 4. **Initialize Database Schema**:
