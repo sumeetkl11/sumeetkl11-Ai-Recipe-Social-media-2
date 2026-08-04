@@ -1,6 +1,6 @@
 import { startTransition, useCallback, useDeferredValue, useEffect, useState } from 'react';
 import { RefreshCcw, Sparkles } from 'lucide-react';
-import { buildApiUrl } from '../services/api';
+import api, { buildApiUrl } from '../services/api';
 import { getSocket } from '../services/socket';
 import PostCard from './PostCard';
 import CreatePost from './CreatePost';
@@ -35,11 +35,8 @@ export default function SocialFeed() {
         setLoading(true);
       }
 
-      const token = localStorage.getItem('token');
-      const response = await fetch(buildApiUrl(`/posts?page=${targetPage}&limit=10`), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await response.json();
+      const response = await api.get(`/posts?page=${targetPage}&limit=10`);
+      const result = response.data;
 
       if (!result.success) {
         setError('Failed to load feed');

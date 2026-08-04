@@ -2,12 +2,22 @@ import jwt from "jsonwebtoken";
 
 const authMiddleware = async (req, res, next) => {
     try {
-        let token = req.cookies?.token;
+        let token = null;
         
-        if (!token) {
-            const authHeader = req.header("Authorization");
-            if (authHeader?.startsWith("Bearer ")) {
-                token = authHeader.replace("Bearer ", "");
+        // 1. Prioritize Authorization header (most reliable for cross-origin SPA requests)
+        const authHeader = req.header("Authorization");
+        if (authHeader?.startsWith("Bearer ")) {
+            const bearerToken = authHeader.replace("Bearer ", "").trim();
+            if (bearerToken && bearerToken !== 'null' && bearerToken !== 'undefined') {
+                token = bearerToken;
+            }
+        }
+
+        // 2. Fall back to cookie if no valid Bearer header
+        if (!token && req.cookies?.token) {
+            const cookieToken = req.cookies.token;
+            if (cookieToken && cookieToken !== 'null' && cookieToken !== 'undefined') {
+                token = cookieToken;
             }
         }
 

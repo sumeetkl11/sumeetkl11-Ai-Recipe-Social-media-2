@@ -12,13 +12,16 @@ export function initializeSocialSocket(io) {
   io.use((socket, next) => {
     try {
       let token = socket.handshake.auth?.token || socket.handshake.query?.token;
+      if (token === 'null' || token === 'undefined') {
+        token = null;
+      }
 
       if (!token && socket.handshake.headers?.cookie) {
         const cookiePair = socket.handshake.headers.cookie
           .split(';')
           .map((c) => c.trim().split('='))
           .find(([key]) => key === 'token');
-        if (cookiePair && cookiePair[1]) {
+        if (cookiePair && cookiePair[1] && cookiePair[1] !== 'null' && cookiePair[1] !== 'undefined') {
           token = cookiePair[1];
         }
       }

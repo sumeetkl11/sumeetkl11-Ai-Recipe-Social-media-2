@@ -37,7 +37,7 @@ export default function MessagesPage() {
   }, [location.state]);
 
   const fetchConversations = useCallback(async (options = {}) => {
-    const silent = options.silent && conversations.length > 0;
+    const silent = options.silent || conversations.length > 0;
     try {
       if (silent) {
         setRefreshing(true);
@@ -49,11 +49,13 @@ export default function MessagesPage() {
       const nextConversations = response.data.data || [];
       setConversations(nextConversations);
       setSelectedConversation((current) => {
-        if (location.state?.selectedConversation) {
-          const matched = nextConversations.find((item) => item.id === location.state.selectedConversation.id);
-          return matched || location.state.selectedConversation;
+        if (!current) {
+          if (location.state?.selectedConversation) {
+            const matched = nextConversations.find((item) => item.id === location.state.selectedConversation.id);
+            return matched || location.state.selectedConversation;
+          }
+          return nextConversations[0] || null;
         }
-        if (!current) return nextConversations[0] || null;
         return nextConversations.find((item) => item.id === current.id) || current;
       });
     } catch {
@@ -66,7 +68,7 @@ export default function MessagesPage() {
 
   useRevalidateOnFocus(() => fetchConversations({ silent: true }), { intervalMs: 20000 });
 
-  const handleMessageSent = () => fetchConversations();
+  const handleMessageSent = () => fetchConversations({ silent: true });
 
   return (
     <div className="page-bg min-h-screen">
@@ -91,7 +93,7 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {loading ? (
+        {loading && conversations.length === 0 ? (
           <div className="grid gap-4">
             <div className="glass-card loading-skeleton h-24 rounded-[28px]" />
             <div className="glass-card loading-skeleton h-[65vh] rounded-[28px]" />

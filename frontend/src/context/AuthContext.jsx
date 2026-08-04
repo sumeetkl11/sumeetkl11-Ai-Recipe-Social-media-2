@@ -24,13 +24,22 @@ export const AuthProvider = ({ children }) => {
             try {
                 const response = await api.get('/auth/me');
                 if (response.data.success) {
-                    setUser(response.data.data.user);
+                    const { user, token } = response.data.data;
+                    if (token && token !== 'null' && token !== 'undefined') {
+                        localStorage.setItem('token', token);
+                    }
+                    setUser(user);
                     // Initialize socket connection after user is confirmed
                     await initializeSocket();
+                } else {
+                    setUser(null);
+                    localStorage.removeItem('token');
                 }
             } catch (error) {
                 // User not authenticated or token expired
                 console.log('No active session');
+                localStorage.removeItem('token');
+                setUser(null);
             } finally {
                 setLoading(false);
             }

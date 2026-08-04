@@ -1,7 +1,7 @@
 // frontend/ai-recipe-generator-ui-boilerplate-code/src/components/MessageThread.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { buildApiUrl } from '../services/api';
+import api from '../services/api';
 import { joinConversation, leaveConversation, onNewMessage, offEvent } from '../services/socket';
 import useRevalidateOnFocus from '../hooks/useRevalidateOnFocus';
 import UserAvatar from './UserAvatar';
@@ -14,34 +14,33 @@ export default function MessageThread({ conversation }) {
   const messagesEndRef = useRef(null);
   const conversationId = conversation?.id;
 
-  const token = localStorage.getItem('token');
+  const hasMessagesRef = useRef(false);
+  hasMessagesRef.current = messages.length > 0;
 
   const fetchMessages = useCallback(async (options = {}) => {
     if (!conversationId) {
+      setMessages([]);
+      setLoading(false);
       return;
     }
 
-    const silent = options.silent && messages.length > 0;
+    const silent = options.silent && hasMessagesRef.current;
 
     try {
       if (!silent) {
         setLoading(true);
       }
 
-      const response = await fetch(
-        buildApiUrl(`/conversations/${conversationId}/messages?limit=50`),
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const result = await response.json();
-      if (result.success) {
-        setMessages(result.data);
+      const response = await api.get(`/conversations/${conversationId}/messages?limit=50`);
+      if (response.data?.success) {
+        setMessages(response.data.data || []);
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
     } finally {
       setLoading(false);
     }
-  }, [conversationId, messages.length, token]);
+  }, [conversationId]);
 
   const handleNewMessage = useCallback((newMessage) => {
     if (newMessage.conversation_id !== conversationId) {

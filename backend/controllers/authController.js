@@ -178,15 +178,18 @@ export const getCurrentUser = async (req, res, next) => {
         
         const preferences = await UserPreference.findByUserId(req.user.id);
         
+        const authHeader = req.header("Authorization");
+        const activeToken = (authHeader?.startsWith("Bearer ") ? authHeader.replace("Bearer ", "").trim() : null) || req.cookies?.token || null;
+
         res.json({
                 success: true,
-                // message: "User fetched successfully",
                 data: {
                     user: {
                         ...user,
                         isAdmin: isAdminEmail(user.email)
                     },
-                    preferences
+                    preferences,
+                    token: activeToken
                 }
             });
         

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Bookmark, ChefHat, Clock3, Heart, MessageCircle, Send, Trash2, Utensils } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
-import { buildApiUrl } from '../services/api';
+import api, { buildApiUrl } from '../services/api';
 import { getSocket } from '../services/socket';
 import FollowButton from './FollowButton';
 import MessageUserButton from './MessageUserButton';
@@ -38,12 +38,9 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
     const fetchComments = async () => {
       try {
         setCommentsLoading(true);
-        const response = await fetch(buildApiUrl(`/posts/${post.id}/comments`), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await response.json();
-        if (result.success) {
-          setComments(result.data || []);
+        const response = await api.get(`/posts/${post.id}/comments`);
+        if (response.data?.success) {
+          setComments(response.data.data || []);
         }
       } catch (err) {
         console.error('Error fetching comments:', err);
@@ -53,7 +50,7 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
     };
 
     fetchComments();
-  }, [showComments, comments.length, post.id, token]);
+  }, [showComments, comments.length, post.id]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -129,17 +126,13 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
     setLikeCount(nextCount);
     onUpdated({ id: post.id, is_liked: nextLiked, like_count: nextCount });
 
-    const method = wasLiked ? 'DELETE' : 'POST';
     try {
       setLoading(true);
-      const response = await fetch(buildApiUrl(`/posts/${post.id}/like`), {
-        method,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = wasLiked
+        ? await api.delete(`/posts/${post.id}/like`)
+        : await api.post(`/posts/${post.id}/like`, {});
 
-      if (!response.ok) throw new Error('Failed to update like');
-
-      const result = await response.json();
+      const result = response.data;
       const confirmedLiked = Boolean(result.data?.is_liked);
       const confirmedCount = result.data?.like_count ?? nextCount;
       setLiked(confirmedLiked);
@@ -160,15 +153,8 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
-      const response = await fetch(buildApiUrl(`/posts/${post.id}`), {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.ok) {
-        onDeleted(post.id);
-      } else {
-        toast.error('Failed to delete post');
-      }
+      await api.delete(`/posts/${post.id}`);
+      onDeleted(post.id);
     } catch {
       toast.error('Failed to delete post — check your connection');
     }
@@ -179,30 +165,21 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
 
     try {
       setLoading(true);
-      const response = await fetch(buildApiUrl(`/posts/${post.id}/comments`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: newComment })
+      const response = await api.post(`/posts/${post.id}/comments`, { content: newComment });
+      const result = response.data;
+
+      const comment = result.data?.comment;
+      const nextCommentCount = result.data?.comment_count ?? commentCount;
+      setComments((current) => {
+        if (!comment || current.some((item) => item.id === comment.id)) return current;
+        return [...current, comment];
       });
-
-      const result = await response.json().catch(() => null);
-
-      if (response.ok) {
-        const comment = result.data?.comment;
-        const nextCommentCount = result.data?.comment_count ?? commentCount;
-        setComments((current) => {
-          if (!comment || current.some((item) => item.id === comment.id)) return current;
-          return [...current, comment];
-        });
-        setCommentCount(nextCommentCount);
-        setNewComment('');
-        setShowComments(true);
-        onUpdated({ id: post.id, comment_count: nextCommentCount });
-      } else {
-        toast.error(result?.message || 'Failed to add comment');
-      }
-    } catch {
-      toast.error('Could not post comment — check your connection');
+      setCommentCount(nextCommentCount);
+      setNewComment('');
+      setShowComments(true);
+      onUpdated({ id: post.id, comment_count: nextCommentCount });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not post comment — check your connection');
     } finally {
       setLoading(false);
     }
@@ -210,22 +187,16 @@ function PostCard({ post, priority = false, onDeleted, onUpdated }) {
 
   const handleDeleteComment = async (commentId) => {
     try {
-      const response = await fetch(buildApiUrl(`/posts/comments/${commentId}`), {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.delete(`/posts/comments/${commentId}`);
+      const result = response.data;
+      const nextCommentCount = result.data?.comment_count ?? Math.max(0, commentCount - 1);
+
+      setComments((current) => current.filter((comment) => comment.id !== commentId));
+      setCommentCount(nextCommentCount);
+      onUpdated({
+        id: post.id,
+        comment_count: nextCommentCount
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        const nextCommentCount = result.data?.comment_count ?? Math.max(0, commentCount - 1);
-
-        setComments((current) => current.filter((comment) => comment.id !== commentId));
-        setCommentCount(nextCommentCount);
-        onUpdated({
-          id: post.id,
-          comment_count: nextCommentCount
-        });
-      }
     } catch (err) {
       console.error('Error deleting comment:', err);
     }

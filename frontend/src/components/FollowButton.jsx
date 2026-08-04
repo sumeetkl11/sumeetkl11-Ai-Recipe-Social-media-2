@@ -1,13 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { buildApiUrl } from '../services/api';
+import api from '../services/api';
 import '../styles/FollowButton.css';
 
 export default function FollowButton({ userId, isFollowing: initialFollowing = false, onFollowChange, className = '' }) {
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [loading, setLoading] = useState(false);
-
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     setIsFollowing(initialFollowing);
@@ -23,22 +21,21 @@ export default function FollowButton({ userId, isFollowing: initialFollowing = f
 
     try {
       setLoading(true);
-      const method = isFollowing ? 'DELETE' : 'POST';
-      const response = await fetch(buildApiUrl(`/users/${userId}/follow`), {
-        method,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = isFollowing
+        ? await api.delete(`/users/${userId}/follow`)
+        : await api.post(`/users/${userId}/follow`, {});
 
-      const result = await response.json().catch(() => null);
-
-      if (response.ok || (response.status === 400 && result?.message?.includes('already following'))) {
-        const confirmed = !isFollowing || response.status === 400;
-        setIsFollowing(confirmed);
-        if (onFollowChange) onFollowChange(confirmed);
+      const result = response.data;
+      const confirmed = !isFollowing;
+      setIsFollowing(confirmed);
+      if (onFollowChange) onFollowChange(confirmed);
+    } catch (err) {
+      if (err.response?.status === 400 && err.response?.data?.message?.includes('already following')) {
+        setIsFollowing(true);
+        if (onFollowChange) onFollowChange(true);
         return;
       }
-
-      if (response.status === 404 && isFollowing) {
+      if (err.response?.status === 404 && isFollowing) {
         setIsFollowing(false);
         if (onFollowChange) onFollowChange(false);
         return;
@@ -47,15 +44,11 @@ export default function FollowButton({ userId, isFollowing: initialFollowing = f
       // Rollback + notify
       setIsFollowing(isFollowing);
       if (onFollowChange) onFollowChange(isFollowing);
-      toast.error(result?.message || 'Could not update follow status');
-    } catch {
-      setIsFollowing(isFollowing);
-      if (onFollowChange) onFollowChange(isFollowing);
-      toast.error('Could not update follow status — check your connection');
+      toast.error(err.response?.data?.message || 'Could not update follow status');
     } finally {
       setLoading(false);
     }
-  }, [isFollowing, userId, token, loading, onFollowChange]);
+  }, [isFollowing, userId, loading, onFollowChange]);
 
   return (
     <button

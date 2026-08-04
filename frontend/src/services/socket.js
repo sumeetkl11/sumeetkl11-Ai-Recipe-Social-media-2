@@ -11,10 +11,11 @@ let connectionPromise = null;
  */
 export function initializeSocket() {
   const token = localStorage.getItem('token');
+  const validToken = token && token !== 'null' && token !== 'undefined' ? token : null;
 
   // If socket is connected with valid authentication or guest mode is desired
   if (socketInstance?.connected) {
-    if (socketInstance.auth?.token === token) {
+    if (socketInstance.auth?.token === validToken) {
       console.log('✅ Socket.io already connected:', socketInstance.id);
       return Promise.resolve(socketInstance);
     }
@@ -34,8 +35,8 @@ export function initializeSocket() {
   // Create new socket instance
   console.log('🔌 Creating new Socket.io connection');
   socketInstance = io(SOCKET_URL, {
-    auth: { token },
-    query: { token },
+    auth: { token: validToken },
+    query: { token: validToken },
     withCredentials: true,
     reconnection: true,
     reconnectionDelay: 1000,
@@ -113,9 +114,18 @@ export function disconnectSocket() {
  * @param {string} conversationId - Conversation ID
  */
 export function joinConversation(conversationId) {
-  if (socketInstance?.connected) {
-    socketInstance.emit('conversation:join', conversationId);
+  const token = localStorage.getItem('token');
+  const validToken = token && token !== 'null' && token !== 'undefined' ? token : null;
+
+  if (!socketInstance || !socketInstance.connected || socketInstance.auth?.token !== validToken) {
+    initializeSocket().then((socket) => {
+      if (socket?.connected) {
+        socket.emit('conversation:join', conversationId);
+      }
+    });
+    return;
   }
+  socketInstance.emit('conversation:join', conversationId);
 }
 
 /**

@@ -1,6 +1,5 @@
-// frontend/ai-recipe-generator-ui-boilerplate-code/src/components/MessageInput.jsx
 import React, { useState } from 'react';
-import { buildApiUrl } from '../services/api';
+import api from '../services/api';
 import { emitTypingStart, emitTypingEnd } from '../services/socket';
 import '../styles/MessageInput.css';
 
@@ -8,28 +7,19 @@ export default function MessageInput({ conversationId, onMessageSent }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem('token');
-
   const handleSend = async () => {
     if (!message.trim()) return;
 
     try {
       setLoading(true);
-      const response = await fetch(
-        buildApiUrl(`/conversations/${conversationId}/messages`),
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ content: message })
-        }
-      );
+      const response = await api.post(`/conversations/${conversationId}/messages`, {
+        content: message
+      });
 
-      if (response.ok) {
+      if (response.data?.success || response.status === 201 || response.status === 200) {
+        const sentData = response.data?.data;
         setMessage('');
-        onMessageSent?.();
+        onMessageSent?.(sentData);
         
         // Emit typing end
         emitTypingEnd(conversationId);
