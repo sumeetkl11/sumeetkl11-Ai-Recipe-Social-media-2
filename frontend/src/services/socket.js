@@ -10,10 +10,19 @@ let connectionPromise = null;
  * @returns {Promise<socket.io.Socket>} Promise that resolves to Socket instance
  */
 export function initializeSocket() {
-  // If already connected, return resolved promise
+  const token = localStorage.getItem('token');
+
+  // If socket is connected with valid authentication or guest mode is desired
   if (socketInstance?.connected) {
-    console.log('✅ Socket.io already connected:', socketInstance.id);
-    return Promise.resolve(socketInstance);
+    if (socketInstance.auth?.token === token) {
+      console.log('✅ Socket.io already connected:', socketInstance.id);
+      return Promise.resolve(socketInstance);
+    }
+    // Token updated after login: disconnect unauthenticated socket and recreate
+    console.log('🔄 Re-authenticating socket connection with new token...');
+    socketInstance.disconnect();
+    socketInstance = null;
+    connectionPromise = null;
   }
 
   // If connection in progress, return existing promise
@@ -22,46 +31,18 @@ export function initializeSocket() {
     return connectionPromise;
   }
 
-  // If instance exists but disconnected, reconnect
-  if (socketInstance && !socketInstance.connected) {
-    console.log('🔄 Reconnecting existing socket instance');
-    socketInstance.connect();
-    
-    connectionPromise = new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        connectionPromise = null;
-        reject(new Error('Socket connection timeout'));
-      }, 5000);
-
-      socketInstance.once('connect', () => {
-        clearTimeout(timeout);
-        connectionPromise = null;
-        resolve(socketInstance);
-      });
-
-      socketInstance.once('connect_error', (error) => {
-        clearTimeout(timeout);
-        connectionPromise = null;
-        reject(error);
-      });
-    });
-
-    return connectionPromise;
-  }
-
   // Create new socket instance
   console.log('🔌 Creating new Socket.io connection');
-  const token = localStorage.getItem('token');
   socketInstance = io(SOCKET_URL, {
     auth: { token },
     query: { token },
-    withCredentials: true, // Send cookies with requests
+    withCredentials: true,
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     reconnectionAttempts: 10,
     transports: ['websocket', 'polling'],
-    forceNew: false,
+    forceNew: true,
   });
 
   // Set up event listeners
