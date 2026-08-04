@@ -1,33 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ClickSpark from './components/ClickSpark';
 import ErrorBoundary from './components/ErrorBoundary';
-import DesktopBottomNav from './components/DesktopBottomNav';
 
 import RouteSceneAnimator from './components/RouteSceneAnimator';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
-import Dashboard from './pages/Dashboard';
-import Pantry from './pages/Pantry';
-import RecipeGenerator from './pages/RecipeGenerator';
-import MyRecipes from './pages/MyRecipes';
-import RecipeDetail from './pages/RecipeDetail';
-import ShoppingList from './pages/ShoppingList';
-import Settings from './pages/Settings';
-import MealPlanner from './pages/MealPlanner';
-import SocialPage from './pages/SocialPage';
-import ChallengesPage from './pages/ChallengesPage';
-import CollectionsPage from './pages/CollectionsPage';
-import CollectionDetailPage from './pages/CollectionDetailPage';
-import MessagesPage from './pages/MessagesPage';
-import ProfilePage from './pages/ProfilePage';
-import MarketplaceHub from './pages/Marketplace/MarketplaceHub';
-import CreateListing from './pages/Marketplace/CreateListing';
+// Route-based code splitting
+const Login = lazy(() => import('./pages/Login'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Pantry = lazy(() => import('./pages/Pantry'));
+const RecipeGenerator = lazy(() => import('./pages/RecipeGenerator'));
+const MyRecipes = lazy(() => import('./pages/MyRecipes'));
+const RecipeDetail = lazy(() => import('./pages/RecipeDetail'));
+const ShoppingList = lazy(() => import('./pages/ShoppingList'));
+const Settings = lazy(() => import('./pages/Settings'));
+const MealPlanner = lazy(() => import('./pages/MealPlanner'));
+const SocialPage = lazy(() => import('./pages/SocialPage'));
+const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
+const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
+const CollectionDetailPage = lazy(() => import('./pages/CollectionDetailPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MarketplaceHub = lazy(() => import('./pages/Marketplace/MarketplaceHub'));
+const CreateListing = lazy(() => import('./pages/Marketplace/CreateListing'));
 
 function OwnProfileRoute() {
   const { user } = useAuth();
@@ -50,37 +51,43 @@ function App() {
               <ClickSpark className="app-frame">
                 <RouteSceneAnimator />
                 <ErrorBoundary>
-                  <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<SignUp />} />
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<SignUp />} />
 
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      }
-                    />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
-                    <Route path="/generate" element={<ProtectedRoute><RecipeGenerator /></ProtectedRoute>} />
-                    <Route path="/recipes" element={<ProtectedRoute><MyRecipes /></ProtectedRoute>} />
-                    <Route path="/recipes/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
-                    <Route path="/meal-plan" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
-                    <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                    <Route path="/social" element={<ProtectedRoute><SocialPage /></ProtectedRoute>} />
-                    <Route path="/challenges" element={<ProtectedRoute><ChallengesPage /></ProtectedRoute>} />
-                    <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
-                    <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailPage /></ProtectedRoute>} />
-                    <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-                    <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHub /></ProtectedRoute>} />
-                    <Route path="/marketplace/new" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><OwnProfileRoute /></ProtectedRoute>} />
-                    <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  </Routes>
+                      <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
+                      <Route path="/generate" element={<ProtectedRoute><RecipeGenerator /></ProtectedRoute>} />
+                      <Route path="/recipes" element={<ProtectedRoute><MyRecipes /></ProtectedRoute>} />
+                      <Route path="/recipes/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
+                      <Route path="/meal-plan" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+                      <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
+                      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                      <Route path="/social" element={<ProtectedRoute><SocialPage /></ProtectedRoute>} />
+                      <Route path="/challenges" element={<ProtectedRoute><ChallengesPage /></ProtectedRoute>} />
+                      <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
+                      <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailPage /></ProtectedRoute>} />
+                      <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                      <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHub /></ProtectedRoute>} />
+                      <Route path="/marketplace/new" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
+                      <Route path="/profile" element={<ProtectedRoute><OwnProfileRoute /></ProtectedRoute>} />
+                      <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </Suspense>
                 </ErrorBoundary>
               </ClickSpark>
             </div>
