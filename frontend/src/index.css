@@ -241,6 +241,7 @@
     position: relative;
     isolation: isolate;
     min-height: 100vh;
+    padding-top: calc(5.5rem + env(safe-area-inset-top, 0px));
     padding-bottom: calc(6.9rem + env(safe-area-inset-bottom, 0px));
   }
 

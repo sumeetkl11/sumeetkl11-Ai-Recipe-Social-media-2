@@ -110,14 +110,14 @@ const Pantry = () => {
   }).length;
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
+    <div className="page-bg bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
       {/* Background Blobs */}
       <div className="cc-bg-blob bg-primary w-96 h-96 -top-20 -left-20 opacity-30"></div>
       <div className="cc-bg-blob bg-tertiary w-[500px] h-[500px] bottom-0 right-0 opacity-20"></div>
 
       <Navbar />
 
-      <main className="pt-24 pb-32 px-4 md:px-10 max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+      <main className="px-4 md:px-10 max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
         
         {/* Left Column: Pantry Inventory */}
         <section className="lg:col-span-8">

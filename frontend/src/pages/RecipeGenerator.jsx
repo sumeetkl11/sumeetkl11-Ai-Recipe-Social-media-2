@@ -102,10 +102,10 @@ const RecipeGenerator = () => {
   };
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
+    <div className="page-bg bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
       <Navbar />
 
-      <main className="pt-24 pb-32 px-4 md:px-10 max-w-7xl mx-auto relative z-10">
+      <main className="px-4 md:px-10 max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column (Main Form) */}

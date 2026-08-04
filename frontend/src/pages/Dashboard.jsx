@@ -92,9 +92,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="bg-background text-on-surface font-body-md min-h-screen">
+      <div className="page-bg bg-background text-on-surface font-body-md min-h-screen">
         <Navbar />
-        <main className="pt-24 pb-32 px-4 md:px-10 max-w-[1200px] mx-auto animate-pulse">
+        <main className="px-4 md:px-10 max-w-[1200px] mx-auto animate-pulse">
           <div className="cc-glass-panel h-96 rounded-3xl mb-12"></div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
              <div className="cc-glass-panel h-64 rounded-3xl"></div>
@@ -107,7 +107,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
+    <div className="page-bg bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
       {/* Background Blobs */}
       <div className="cc-bg-blob bg-primary w-96 h-96 -top-20 -left-20 opacity-30"></div>
       <div className="cc-bg-blob bg-primary-container w-[500px] h-[500px] bottom-0 right-0 opacity-20"></div>
@@ -115,7 +115,7 @@ const Dashboard = () => {
 
       <Navbar />
 
-      <main className="pt-24 pb-32 px-4 md:px-10 max-w-[1200px] mx-auto relative z-10">
+      <main className="px-4 md:px-10 max-w-[1200px] mx-auto relative z-10">
         
         {/* Hero Section */}
         <section className="mb-12">

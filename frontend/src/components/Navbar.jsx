@@ -78,7 +78,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex justify-between items-center px-4 py-2 bg-gray-200/10 text-slate-100 backdrop-blur-2xl border border-white/30 w-[calc(100%-40px)] max-w-2xl rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex justify-between items-center px-4 py-2 bg-gray-200/10 text-slate-100 backdrop-blur-2xl border border-white/30 w-[calc(100%-40px)] max-w-2xl rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
         <NavLink to="/dashboard" className={({isActive}) => `flex flex-col items-center justify-center rounded-full px-4 sm:px-6 py-2 transition-all duration-[180ms] ease-out ${isActive ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_8px_16px_rgba(251,146,60,0.4)] font-bold scale-110 -translate-y-1' : 'text-slate-700 hover:text-slate-900 hover:bg-white/20'}`}>
           {({isActive}) => (
             <>
