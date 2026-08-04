@@ -56,12 +56,18 @@ const allowedOrigins = new Set([
   'http://localhost:5174',
   'http://192.168.x.x:5173',
   'https://tastebuds-main.vercel.app',
+  'https://chef-craft.vercel.app',
   ...configuredOrigins
 ]);
 
 function isAllowedOrigin(origin) {
   // Allow requests with no origin (like mobile apps, curl, or same-origin)
   if (!origin) {
+    return true;
+  }
+
+  // Allow any *.vercel.app domain dynamically
+  if (origin.endsWith('.vercel.app')) {
     return true;
   }
 
