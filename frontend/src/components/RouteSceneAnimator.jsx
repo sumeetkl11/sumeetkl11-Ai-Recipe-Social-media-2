@@ -30,7 +30,6 @@ export default function RouteSceneAnimator() {
 
     targets.forEach((el, index) => {
       el.style.animation = 'none';
-      // Force reflow
       void el.offsetWidth;
       el.style.animation = `route-entrance 0.86s cubic-bezier(0.215, 0.61, 0.355, 1) ${index * 0.05}s forwards`;
     });

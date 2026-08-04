@@ -109,9 +109,9 @@ const Dashboard = () => {
   return (
     <div className="page-bg bg-background text-on-surface font-body-md min-h-screen relative overflow-hidden">
       {/* Background Blobs */}
-      <div className="cc-bg-blob bg-primary w-96 h-96 -top-20 -left-20 opacity-30"></div>
-      <div className="cc-bg-blob bg-primary-container w-[500px] h-[500px] bottom-0 right-0 opacity-20"></div>
-      <div className="cc-bg-blob bg-primary/20 w-64 h-64 top-1/2 left-1/3 opacity-10"></div>
+      <div className="cc-bg-blob bg-slate-100 w-96 h-96 -top-20 -left-20 opacity-[0.06]"></div>
+      <div className="cc-bg-blob bg-white w-[500px] h-[500px] bottom-0 right-0 opacity-[0.08]"></div>
+      <div className="cc-bg-blob bg-slate-100/40 w-64 h-64 top-1/2 left-1/3 opacity-[0.04]"></div>
 
       <Navbar />
 

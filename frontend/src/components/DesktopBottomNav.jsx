@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, UtensilsCrossed, Apple, LayoutDashboard } from 'lucide-react';
 import ClickSpark from './ClickSpark';
 
@@ -15,13 +15,11 @@ export default function DesktopBottomNav() {
   ];
 
   const containerRef = React.useRef(null);
-  
-
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden md:flex" ref={containerRef}>
       <nav 
-        className="rounded-full p-2 flex items-center gap-1 shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10 bg-slate-900/70 backdrop-blur-2xl"
+        className="rounded-full p-2 flex items-center gap-1 shadow-[0_16px_40px_rgba(180,110,40,0.10)] border border-white/80 bg-white/50 backdrop-blur-2xl"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -43,7 +41,7 @@ export default function DesktopBottomNav() {
                   relative px-6 py-2.5 rounded-full flex items-center gap-2.5 text-sm font-semibold transition-all duration-300
                   ${isActive 
                     ? 'text-white shadow-lg' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    : 'text-[#574538] hover:text-[#3d1e06] hover:bg-white/60'
                   }
                 `}
               >

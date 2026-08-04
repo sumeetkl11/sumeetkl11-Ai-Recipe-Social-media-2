@@ -9,16 +9,32 @@ export function buildApiUrl(path = '') {
 let isRedirecting = false;
 
 async function request(url, options = {}) {
-    const fullUrl = url.startsWith('http') ? url : buildApiUrl(url);
+    let fullUrl = url.startsWith('http') ? url : buildApiUrl(url);
+
+    if (options.params && typeof options.params === 'object') {
+        const queryParams = new URLSearchParams();
+        Object.entries(options.params).forEach(([key, val]) => {
+            if (val !== undefined && val !== null) {
+                queryParams.append(key, val);
+            }
+        });
+        const queryString = queryParams.toString();
+        if (queryString) {
+            fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString;
+        }
+    }
+
+    const { params, ...fetchOptions } = options;
+
     const headers = {
         'Content-Type': 'application/json',
-        ...(options.headers || {}),
+        ...(fetchOptions.headers || {}),
     };
 
     const config = {
-        ...options,
+        ...fetchOptions,
         headers,
-        credentials: options.credentials ?? 'include',
+        credentials: fetchOptions.credentials ?? 'include',
     };
 
     const response = await fetch(fullUrl, config);
@@ -67,4 +83,3 @@ const api = {
 };
 
 export default api;
-

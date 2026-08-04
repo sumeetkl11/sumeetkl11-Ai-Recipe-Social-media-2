@@ -1,20 +1,13 @@
-const IMAGE_LIST = [
-  'Bacon.jpg', 'Basil.jpg', 'Beef.jpg', 'Celery.jpg', 'Cereal.jpg', 'Cheddar.png',
-  'Couscous.jpg', 'Cream.jpg', 'Flour.jpg', 'Green Chili.jpg', 'Lettuce.jpg',
-  'Milk.jpg', 'Noodles.jpg', 'Olive Oil.jpg', 'Pineapple.jpg', 'Pomegranate.jpg',
-  'Pork.jpg', 'Quinoa.jpg', 'Shrimp.jpg', 'Soy Sauce.jpg', 'Turkey.jpg', 'Yogurt.jpg',
-  'Zucchini.jpg', 'bell_pepper.jpg', 'broccoli.jpg', 'cabbage.jpg', 'carrot.jpg',
-  'coriander.jpg', 'corn.jpg', 'cucumber.jpg', 'eggplant.jpg', 'garlic.jpg',
-  'green_chili.jpg', 'heavy cream.jpg', 'lemon.jpg', 'mushroom.jpg', 'onion.jpg',
-  'peas.jpg', 'potato.jpg', 'sour cream.webp', 'spinach.jpg', 'tomato.jpg'
-];
+// Ingredient Image Mapping for Pantry Items
+// Dynamically imports local images from src/assets/images/pantry-images
+
+const localImages = import.meta.glob('../assets/images/pantry-images/*.jpg', { eager: true, import: 'default' });
 
 export const INGREDIENT_IMAGES = {};
 
-IMAGE_LIST.forEach(fileName => {
-  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
-  const key = nameWithoutExt.replace(/_/g, ' ').toLowerCase().trim();
-  const url = `/pantry-images/${fileName}`;
+Object.entries(localImages).forEach(([filePath, url]) => {
+  const fileName = filePath.split('/').pop().replace(/\.jpg$/i, '');
+  const key = fileName.replace(/_/g, ' ').toLowerCase().trim();
   INGREDIENT_IMAGES[key] = url;
 
   // Common plurals
