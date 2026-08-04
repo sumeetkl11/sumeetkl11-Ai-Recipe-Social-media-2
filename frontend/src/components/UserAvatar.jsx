@@ -34,6 +34,8 @@ export default function UserAvatar({
         src={src}
         alt={label}
         className={className}
+        loading="lazy"
+        decoding="async"
         onError={() => setFailedSource(src)}
         style={{ width: sizeValue, height: sizeValue, minWidth: sizeValue }}
       />

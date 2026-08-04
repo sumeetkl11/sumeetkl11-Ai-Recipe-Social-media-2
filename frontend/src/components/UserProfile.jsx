@@ -365,6 +365,8 @@ export default function UserProfile() {
                         src={post.image_url || post.recipe_image_url}
                         alt={post.recipe_name || 'Photo post'}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105 group-hover:opacity-90"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center text-sm text-slate-700">

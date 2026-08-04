@@ -42,7 +42,7 @@ export const getFeedPosts = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error fetching feed posts:', error);
-    next(ApiError.internal('Failed to fetch posts'));
+    next(error instanceof ApiError ? error : ApiError.internal(error.message || 'Failed to fetch posts'));
   }
 };
 

@@ -279,6 +279,9 @@ const RecipeGenerator = () => {
                       src={generatedRecipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80'} 
                       alt={generatedRecipe.name} 
                       className="w-full h-full object-cover" 
+                      loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';

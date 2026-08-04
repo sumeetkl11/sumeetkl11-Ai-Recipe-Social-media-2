@@ -247,7 +247,7 @@ export default function CreatePost({ onPostCreated, buttonLabel = 'Create Post',
 
               {imagePreview && (
                 <div className="image-preview">
-                  <img src={imagePreview} alt="Post preview" />
+                  <img src={imagePreview} alt="Post preview" loading="eager" decoding="async" />
                   <button type="button" onClick={clearImage}>
                     <X className="h-4 w-4" />
                     Remove image

@@ -37,7 +37,7 @@ export default function ChallengeCard({ challenge, onJoin }) {
   return (
     <div className="challenge-card">
       {challenge.image_url && (
-        <img src={challenge.image_url} alt={challenge.title} className="challenge-image" />
+        <img src={challenge.image_url} alt={challenge.title} className="challenge-image" loading="lazy" decoding="async" />
       )}
       <div className="challenge-content">
         <h3>{challenge.title}</h3>

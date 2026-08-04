@@ -186,7 +186,7 @@ const Dashboard = () => {
                   <Link to={`/recipes/${recentRecipes[0].id}`} className="block group cursor-pointer">
                     <div className="relative h-40 w-full rounded-2xl overflow-hidden mb-3 bg-white/40 flex items-center justify-center">
                       {recentRecipes[0].image_url ? (
-                        <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={recentRecipes[0].image_url} alt={recentRecipes[0].name} />
+                        <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={recentRecipes[0].image_url} alt={recentRecipes[0].name} loading="eager" decoding="async" fetchPriority="high" />
                       ) : (
                         <span className="material-symbols-outlined text-5xl text-primary/30">restaurant</span>
                       )}
@@ -203,7 +203,7 @@ const Dashboard = () => {
                     <Link key={recipe.id} to={`/recipes/${recipe.id}`} className="flex items-center gap-4 cc-glass-pill p-3 rounded-xl hover:bg-white/40 transition-colors cursor-pointer border-transparent hover:border-white/40">
                       <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/40 flex items-center justify-center">
                         {recipe.image_url ? (
-                          <img className="w-full h-full object-cover" src={recipe.image_url} alt={recipe.name} />
+                          <img className="w-full h-full object-cover" src={recipe.image_url} alt={recipe.name} loading="lazy" decoding="async" />
                         ) : (
                           <span className="material-symbols-outlined text-2xl text-primary/30">restaurant</span>
                         )}
@@ -266,7 +266,7 @@ const Dashboard = () => {
                 popularPosts.map((post) => (
                   <Link key={post.id} to={`/social`} className="relative aspect-square rounded-2xl overflow-hidden group cursor-pointer bg-white/40 flex items-center justify-center">
                     {post.image_url ? (
-                      <img className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" src={post.image_url} alt={post.recipe_name || 'Post'} />
+                      <img className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" src={post.image_url} alt={post.recipe_name || 'Post'} loading="lazy" decoding="async" />
                     ) : (
                       <span className="material-symbols-outlined text-4xl text-primary/30">image</span>
                     )}

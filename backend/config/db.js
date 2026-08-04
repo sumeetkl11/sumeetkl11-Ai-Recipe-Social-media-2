@@ -9,14 +9,15 @@ const { Pool } = pkg;
 const connectionString = process.env.DATABASE_URL;
 
 const poolConfig = {
-    // Connection pool configuration for production readiness
-    max: 20, // Maximum number of clients in pool
-    min: 2, // Minimum number of clients in pool
-    idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-    connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection can't be established (increased from 2s to handle concurrent requests)
-    maxUses: 7500, // Close & replace connection after 7500 uses
-    // Add query timeout to prevent queries from holding connections indefinitely
-    query_timeout: 30000, // 30 second query timeout
+    // Connection pool configuration optimized for serverless Postgres (Neon)
+    max: 10,
+    min: 0, // min: 0 prevents stale connections from remaining in pool when Neon proxy closes idle sockets
+    idleTimeoutMillis: 10000, // Close idle clients after 10s
+    connectionTimeoutMillis: 15000, // Allow up to 15s for serverless database cold starts
+    maxUses: 1000, // Close & replace connection after 1000 uses
+    query_timeout: 15000, // 15 second query timeout
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 5000,
 };
 
 if (connectionString) {
@@ -34,12 +35,38 @@ if (connectionString) {
 
 const pool = new Pool(poolConfig);
 
+// Resilient query wrapper to auto-retry on stale connection drops or timeouts
+const originalPoolQuery = pool.query.bind(pool);
+pool.query = async function (text, params) {
+    try {
+        return await originalPoolQuery(text, params);
+    } catch (err) {
+        const isConnectionError = 
+            err.code === '57P01' || 
+            err.code === '57P02' || 
+            err.code === '58P01' || 
+            err.code === '08006' || 
+            err.code === '08003' || 
+            err.code === '08001' || 
+            err.code === '08004' || 
+            err.message?.includes('Query read timeout') ||
+            err.message?.includes('Connection terminated') ||
+            err.message?.includes('ECONNRESET') ||
+            err.message?.includes('EPIPE');
+
+        if (isConnectionError) {
+            console.warn('[DB Pool] Retrying query after connection failure/timeout:', err.message);
+            return await originalPoolQuery(text, params);
+        }
+        throw err;
+    }
+};
+
 // Log pool errors
 pool.on('error', (err, client) => {
     console.error('[DB Pool] Unexpected error on idle client:', {
         error: err.message,
         code: err.code,
-        // Only log full stack in development
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
 });

@@ -127,6 +127,7 @@ export default function MarketplaceHub() {
                       src={getIngredientImage(product.name, product.category)} 
                       alt={product.name}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -202,6 +203,8 @@ export default function MarketplaceHub() {
                         <img 
                           src={getIngredientImage(item.name, item.category)} 
                           alt={item.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.onerror = null;

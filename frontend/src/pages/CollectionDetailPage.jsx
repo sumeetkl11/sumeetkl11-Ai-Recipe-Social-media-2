@@ -160,6 +160,8 @@ export default function CollectionDetailPage() {
                     src={recipe.image}
                     alt={recipe.name}
                     className="w-full h-48 object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 )}
                 <div className="p-4">

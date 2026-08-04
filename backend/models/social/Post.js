@@ -209,11 +209,13 @@ class Post {
           r.name AS recipe_name,
           r.description AS recipe_description,
           r.image_url AS recipe_image_url,
-          CASE WHEN $1::UUID IS NOT NULL THEN (SELECT EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1::UUID)) ELSE false END AS is_liked,
-          CASE WHEN $1::UUID IS NOT NULL THEN (SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1::UUID AND ${followingColumn} = p.user_id)) ELSE false END AS is_following_author
+          (l.user_id IS NOT NULL) AS is_liked,
+          (f.follower_id IS NOT NULL) AS is_following_author
          FROM posts p
          JOIN users u ON p.user_id = u.id
          LEFT JOIN recipes r ON p.recipe_id = r.id
+         LEFT JOIN likes l ON l.post_id = p.id AND l.user_id = $1
+         LEFT JOIN follows f ON f.follower_id = $1 AND f.${followingColumn} = p.user_id
          ORDER BY p.created_at DESC
          LIMIT $2 OFFSET $3`,
         [userId || null, limit, offset]
